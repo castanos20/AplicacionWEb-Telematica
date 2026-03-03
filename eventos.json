@@ -108,5 +108,25 @@
     "start": "10:00",
     "end": "12:00",
     "color": "orange"
+  },
+  {
+    "id": 1772512325640,
+    "name": "Matematicas Especiales",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 3,
+    "start": "12:00",
+    "end": "14:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512350272,
+    "name": "Sistemas Operacionales",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 3,
+    "start": "06:00",
+    "end": "08:00",
+    "color": "orange"
   }
 ]
