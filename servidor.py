@@ -1,39 +1,20 @@
 import http.server
 import json
 import os
-import webbrowser
-import threading
-import time
 
 PORT = 8989
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EVENTS_FILE = os.path.join(BASE_DIR, 'eventos.json')
-HEARTBEAT_TIMEOUT = 6  # segundos sin heartbeat → apagar
-
-last_heartbeat = time.time()
-
-def watchdog():
-    # Espera al inicio para que el navegador cargue
-    time.sleep(5)
-    while True:
-        time.sleep(2)
-        if time.time() - last_heartbeat > HEARTBEAT_TIMEOUT:
-            print('🔴 Pestaña cerrada. Apagando servidor...')
-            os._exit(0)
-
-threading.Thread(target=watchdog, daemon=True).start()
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
-        global last_heartbeat
         if self.path == '/' or self.path == '/calendario.html':
             self._serve_file('calendario.html', 'text/html')
         elif self.path == '/eventos':
             self._serve_json()
         elif self.path == '/ping':
-            last_heartbeat = time.time()
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
@@ -101,15 +82,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass  # silenciar logs
 
-def abrir_navegador():
-    time.sleep(0.8)
-    webbrowser.open(f'http://localhost:{PORT}')
 
 print(f'✅ Servidor corriendo en http://localhost:{PORT}')
-print('📅 Abriendo el calendario...')
-print('⛔ Se apagará solo al cerrar la pestaña')
-
-threading.Thread(target=abrir_navegador, daemon=True).start()
+print('📅 Calendario disponible — Ctrl+C para apagar')
 
 httpd = http.server.HTTPServer(('localhost', PORT), Handler)
 httpd.serve_forever()
