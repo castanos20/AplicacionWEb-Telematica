@@ -1,13 +1,79 @@
 [
   {
-    "id": 1773281312141,
-    "title": "uwu",
+    "id": 1773281441166,
+    "title": "Entrega de Taller de Investigacion",
+    "description": "",
+    "status": "pending",
+    "priority": "high",
+    "date": "2026-03-17",
+    "hour": null,
+    "eventId": 1772509973870,
+    "createdAt": 1773281441166
+  },
+  {
+    "id": 1773281531526,
+    "title": "Parcial DBA",
     "description": "",
     "status": "pending",
     "priority": "medium",
     "date": "2026-03-16",
     "hour": null,
     "eventId": 1772509621140,
-    "createdAt": 1773281312141
+    "createdAt": 1773281531526
+  },
+  {
+    "id": 1773281560910,
+    "title": "Entrega de trabajo",
+    "description": "",
+    "status": "pending",
+    "priority": "medium",
+    "date": "2026-03-16",
+    "hour": null,
+    "eventId": 1772509621140,
+    "createdAt": 1773281560910
+  },
+  {
+    "id": 1773281608607,
+    "title": "Parcial Mat Esp",
+    "description": "",
+    "status": "pending",
+    "priority": "medium",
+    "date": "2026-03-20",
+    "hour": null,
+    "eventId": 1772512601281,
+    "createdAt": 1773281608607
+  },
+  {
+    "id": 1773281689562,
+    "title": "Parcial DUO PrgWeb",
+    "description": "",
+    "status": "pending",
+    "priority": "medium",
+    "date": "2026-03-17",
+    "hour": null,
+    "eventId": 1772509843293,
+    "createdAt": 1773281689562
+  },
+  {
+    "id": 1773281729983,
+    "title": "Parcial PrgWeb Solo",
+    "description": "",
+    "status": "pending",
+    "priority": "medium",
+    "date": "2026-03-18",
+    "hour": null,
+    "eventId": 1772512505043,
+    "createdAt": 1773281729983
+  },
+  {
+    "id": 1773281808584,
+    "title": "Entrega Anal Sistemas",
+    "description": "",
+    "status": "pending",
+    "priority": "medium",
+    "date": "2026-03-12",
+    "hour": null,
+    "eventId": 1772512540497,
+    "createdAt": 1773281808584
   }
 ]
