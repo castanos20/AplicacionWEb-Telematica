@@ -22,6 +22,10 @@
     --hour-w: 60px;
     --col-w: 1fr;
     --row-h: 60px;
+    /* Prioridades de tareas */
+    --prio-high: #f87171;
+    --prio-medium: #f5a623;
+    --prio-low: #42b883;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,7 +40,7 @@
     overflow: hidden;
   }
 
-  /* TOP BAR */
+  /* ─── TOP BAR ──────────────────────────────────────── */
   .topbar {
     display: flex;
     align-items: center;
@@ -54,11 +58,7 @@
     letter-spacing: -0.5px;
   }
 
-  .nav-btns {
-    display: flex;
-    gap: 4px;
-    margin-left: 8px;
-  }
+  .nav-btns { display: flex; gap: 4px; margin-left: 8px; }
 
   .nav-btn {
     background: none;
@@ -71,7 +71,6 @@
     font-size: 14px;
     transition: all 0.15s;
   }
-
   .nav-btn:hover { background: var(--border); }
 
   .month-label {
@@ -94,7 +93,6 @@
     margin-left: auto;
     transition: all 0.15s;
   }
-
   .today-btn:hover { background: var(--accent2); }
 
   .add-btn {
@@ -109,8 +107,39 @@
     font-size: 13px;
     transition: all 0.15s;
   }
-
   .add-btn:hover { background: var(--accent); color: var(--event-text); }
+
+  /* Botón tareas — resalta si el panel está abierto */
+  .tasks-toggle-btn {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .tasks-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tasks-toggle-btn.active { background: rgba(245,166,35,0.1); border-color: var(--accent); color: var(--accent); }
+  /* Badge con contador de tareas pendientes */
+  .tasks-toggle-btn .tasks-badge {
+    position: absolute;
+    top: -6px; right: -6px;
+    background: var(--prio-high);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    min-width: 16px;
+    text-align: center;
+    display: none;
+  }
+  .tasks-toggle-btn .tasks-badge.visible { display: block; }
 
   .save-btn {
     background: #2a2a4a;
@@ -127,15 +156,23 @@
   .save-btn:hover { background: #1e3a1e; color: #42b883; border-color: #42b883; }
   .save-btn.saved { background: #1e3a1e; color: #42b883; border-color: #42b883; }
 
-  /* CALENDAR GRID */
+  /* ─── LAYOUT PRINCIPAL ──────────────────────────────── */
+  /* main-content: contiene el calendario + el panel de tareas en fila */
+  .main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ─── CALENDARIO ────────────────────────────────────── */
   .calendar-wrap {
     display: flex;
     flex-direction: column;
     flex: 1;
     overflow: hidden;
+    min-width: 0; /* importante para flex shrink */
   }
 
-  /* Day headers */
   .day-headers {
     display: grid;
     grid-template-columns: var(--hour-w) repeat(7, var(--col-w));
@@ -144,10 +181,7 @@
     flex-shrink: 0;
   }
 
-  .day-header {
-    padding: 12px 0;
-    text-align: center;
-  }
+  .day-header { padding: 12px 0; text-align: center; }
 
   .day-name {
     font-size: 11px;
@@ -161,8 +195,7 @@
     font-size: 22px;
     font-weight: 500;
     margin-top: 2px;
-    width: 38px;
-    height: 38px;
+    width: 38px; height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,21 +203,14 @@
     border-radius: 50%;
     transition: background 0.15s;
   }
+  .day-num.today { background: var(--accent); color: var(--event-text); font-weight: 700; }
 
-  .day-num.today {
-    background: var(--accent);
-    color: var(--event-text);
-    font-weight: 700;
-  }
-
-  /* Scrollable body */
   .grid-body {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
   }
-
   .grid-body::-webkit-scrollbar { width: 6px; }
   .grid-body::-webkit-scrollbar-track { background: var(--surface); }
   .grid-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -208,24 +234,290 @@
     border-right: 1px solid var(--border);
   }
 
-  .day-col {
-    border-right: 1px solid var(--grid-line);
-    position: relative;
-  }
+  .day-col { border-right: 1px solid var(--grid-line); position: relative; }
 
   .hour-cell {
     height: var(--row-h);
     border-bottom: 1px solid var(--grid-line);
     position: relative;
   }
-
   .hour-cell:hover { background: rgba(245,166,35,0.03); }
 
-  /* Events */
+  /* ─── BOTÓN ⋯ EN CARD DE EVENTO (hover) ─────────────── */
+  .event .ev-options-btn {
+    position: absolute;
+    bottom: 4px; right: 5px;
+    background: rgba(0,0,0,0.25);
+    border: none;
+    border-radius: 5px;
+    color: inherit;
+    font-size: 13px;
+    line-height: 1;
+    padding: 1px 5px 2px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+    pointer-events: all;
+    z-index: 12;
+    letter-spacing: 1px;
+  }
+  .event:hover .ev-options-btn { opacity: 1; }
+  .ev-options-btn:hover { background: rgba(0,0,0,0.45); }
+
+  /* Indicador de apunte en el card del evento */
+  .event .ev-note-indicator {
+    position: absolute;
+    top: 4px; left: 6px;
+    font-size: 10px;
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
+  /* ─── MODAL DE APUNTES ───────────────────────────────── */
+  #noteModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  #noteModal.open { opacity: 1; pointer-events: all; }
+
+  .note-modal-box {
+    background: var(--surface);
+    border-radius: 16px;
+    width: 500px;
+    max-width: calc(100vw - 32px);
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+    transform: translateY(18px) scale(0.97);
+    transition: transform 0.22s cubic-bezier(.22,1,.36,1);
+    display: flex;
+    flex-direction: column;
+  }
+  #noteModal.open .note-modal-box { transform: translateY(0) scale(1); }
+
+  /* Franja de color del evento */
+  .note-modal-stripe {
+    height: 4px;
+    width: 100%;
+    flex-shrink: 0;
+  }
+  .note-modal-stripe.orange { background: linear-gradient(90deg,#f5a623,#e8882a); }
+  .note-modal-stripe.blue   { background: linear-gradient(90deg,#4e8ef7,#6fa3fb); }
+  .note-modal-stripe.green  { background: linear-gradient(90deg,#42b883,#34d399); }
+  .note-modal-stripe.purple { background: linear-gradient(90deg,#a78bfa,#c4b5fd); }
+  .note-modal-stripe.pink   { background: linear-gradient(90deg,#f472b6,#fb7185); }
+  .note-modal-stripe.red    { background: linear-gradient(90deg,#f87171,#fca5a5); }
+
+  .note-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .note-modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .note-modal-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.2px;
+  }
+  .note-modal-close {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .note-modal-close:hover { background: var(--border); color: var(--text); }
+
+  #noteTextarea {
+    background: var(--bg);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 16px 18px;
+    resize: none;
+    min-height: 180px;
+    max-height: 360px;
+    outline: none;
+    width: 100%;
+    transition: background 0.15s;
+  }
+  #noteTextarea:focus { background: rgba(15,52,96,0.4); }
+  #noteTextarea::placeholder { color: var(--text-muted); font-style: italic; }
+
+  .note-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .note-char-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+  .note-modal-actions { display: flex; gap: 8px; }
+  .note-save-btn {
+    background: rgba(167,139,250,0.15);
+    border: 1px solid rgba(167,139,250,0.4);
+    color: #c4b5fd;
+    padding: 7px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .note-save-btn:hover { background: rgba(167,139,250,0.3); color: #fff; border-color: #a78bfa; }
+  .note-clear-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .note-clear-btn:hover { border-color: var(--prio-high); color: var(--prio-high); }
+
+  /* ─── INDICADORES DE TAREAS EN BLOQUES ──────────────── */
+  /*
+   * .task-indicator — pill en la esquina inferior-derecha de la hour-cell.
+   * Muestra una barra de color de prioridad dominante + conteo de tareas.
+   */
+  .task-indicator {
+    position: absolute;
+    bottom: 5px; right: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 5;
+    pointer-events: none;
+    background: rgba(15, 15, 30, 0.72);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 2px 7px 2px 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    transition: opacity 0.15s;
+  }
+
+  /* Barra vertical de prioridad dominante */
+  .task-indicator-bar {
+    width: 3px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .task-indicator-bar.priority-high   {
+    background: var(--prio-high);
+    box-shadow: 0 0 6px rgba(248,113,113,0.8);
+  }
+  .task-indicator-bar.priority-medium {
+    background: var(--prio-medium);
+    box-shadow: 0 0 6px rgba(245,166,35,0.8);
+  }
+  .task-indicator-bar.priority-low    {
+    background: var(--prio-low);
+    box-shadow: 0 0 6px rgba(66,184,131,0.8);
+  }
+  .task-indicator-bar.priority-none   {
+    background: var(--text-muted);
+  }
+
+  /* Número de tareas */
+  .task-indicator-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -0.3px;
+  }
+
+  /* Mini-puntitos de prioridad secundaria (hasta 2 extras) */
+  .task-indicator-dots {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+  .task-indicator-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    opacity: 0.7;
+  }
+  .task-indicator-dot.priority-high   { background: var(--prio-high); }
+  .task-indicator-dot.priority-medium { background: var(--prio-medium); }
+  .task-indicator-dot.priority-low    { background: var(--prio-low); }
+  .task-indicator-dot.priority-none   { background: var(--text-muted); }
+
+  /* Indicador en la hora-celda: se intensifica en hover */
+  .hour-cell:hover .task-indicator {
+    background: rgba(15, 15, 30, 0.9);
+    border-color: rgba(255,255,255,0.13);
+  }
+
+  /* ─── DOT EN EL CARD DE EVENTO ───────────────────────── */
+  /* Reemplaza el blanco genérico por un badge conteo */
+  .event .ev-task-badge {
+    position: absolute;
+    top: 4px; right: 6px;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 1px 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    line-height: 1.4;
+  }
+  .event .ev-task-badge::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0.85;
+    display: inline-block;
+  }
+
+  /* ─── EVENTOS ────────────────────────────────────────── */
   .event {
     position: absolute;
-    left: 3px;
-    right: 3px;
+    left: 3px; right: 3px;
     background: var(--event-bg);
     color: var(--event-text);
     border-radius: 8px;
@@ -239,47 +531,232 @@
     transition: all 0.15s;
     user-select: none;
   }
-
-  .event:hover {
-    box-shadow: 0 4px 16px rgba(245,166,35,0.5);
-    transform: scale(1.01);
-  }
-
+  .event:hover { box-shadow: 0 4px 16px rgba(245,166,35,0.5); transform: scale(1.01); }
   .event .ev-title { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .event .ev-sub { font-weight: 400; font-size: 11px; opacity: 0.8; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Color variants */
-  .event.blue { background: #4e8ef7; box-shadow: 0 2px 8px rgba(78,142,247,0.3); }
-  .event.blue:hover { box-shadow: 0 4px 16px rgba(78,142,247,0.5); }
-  .event.green { background: #42b883; box-shadow: 0 2px 8px rgba(66,184,131,0.3); color: #fff; }
-  .event.green:hover { box-shadow: 0 4px 16px rgba(66,184,131,0.5); }
+
+
+  .event.blue   { background: #4e8ef7; box-shadow: 0 2px 8px rgba(78,142,247,0.3); }
+  .event.blue:hover   { box-shadow: 0 4px 16px rgba(78,142,247,0.5); }
+  .event.green  { background: #42b883; box-shadow: 0 2px 8px rgba(66,184,131,0.3); color: #fff; }
+  .event.green:hover  { box-shadow: 0 4px 16px rgba(66,184,131,0.5); }
   .event.purple { background: #a78bfa; box-shadow: 0 2px 8px rgba(167,139,250,0.3); color: #1a1a2e; }
-  .event.pink { background: #f472b6; box-shadow: 0 2px 8px rgba(244,114,182,0.3); color: #1a1a2e; }
-  .event.red { background: #f87171; box-shadow: 0 2px 8px rgba(248,113,113,0.3); color: #1a1a2e; }
+  .event.pink   { background: #f472b6; box-shadow: 0 2px 8px rgba(244,114,182,0.3); color: #1a1a2e; }
+  .event.red    { background: #f87171; box-shadow: 0 2px 8px rgba(248,113,113,0.3); color: #1a1a2e; }
 
-  /* Current time line */
-  .time-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--accent);
-    z-index: 20;
-    pointer-events: none;
+  /* Línea de tiempo actual */
+  .time-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--accent); z-index: 20; pointer-events: none; }
+  .time-line::before { content: ''; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; }
+
+  /* ─── PANEL DE TAREAS ────────────────────────────────── */
+  .task-panel {
+    width: 320px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: width 0.25s ease, opacity 0.2s ease;
+  }
+  .task-panel.hidden { width: 0; opacity: 0; pointer-events: none; }
+
+  .task-panel-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .task-panel-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .task-panel-title span.pending-count {
+    font-size: 11px;
+    background: rgba(245,166,35,0.15);
+    color: var(--accent);
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 700;
   }
 
-  .time-line::before {
-    content: '';
-    position: absolute;
-    left: -4px;
-    top: -4px;
-    width: 10px;
-    height: 10px;
+  /* Quick-add de tarea */
+  .task-quick-add {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .task-quick-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .task-quick-input:focus { border-color: var(--accent); }
+  .task-quick-add-btn {
     background: var(--accent);
+    color: var(--event-text);
+    border: none;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .task-quick-add-btn:hover { background: var(--accent2); }
+
+  /* Barra de filtros y orden */
+  .task-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .filter-select, .sort-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    outline: none;
+    flex: 1;
+    min-width: 80px;
+    transition: border-color 0.15s;
+  }
+  .filter-select:focus, .sort-select:focus { border-color: var(--accent); }
+
+  /* Lista de tareas */
+  .task-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 10px;
+  }
+  .task-list::-webkit-scrollbar { width: 4px; }
+  .task-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .task-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 40px 20px;
+    line-height: 1.6;
+  }
+  .task-empty span { font-size: 28px; display: block; margin-bottom: 8px; }
+
+  /* Ítem de tarea */
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    cursor: default;
+    position: relative;
+  }
+  .task-item:hover { background: rgba(255,255,255,0.04); border-color: var(--border); }
+  .task-item.done { opacity: 0.5; }
+  .task-item.done .task-item-title { text-decoration: line-through; color: var(--text-muted); }
+
+  /* Checkbox personalizado */
+  .task-check {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    margin-top: 1px;
+  }
+  .task-check:hover { border-color: var(--accent); }
+  .task-item.done .task-check { background: var(--prio-low); border-color: var(--prio-low); }
+  .task-item.done .task-check::after { content: '✓'; font-size: 10px; color: #fff; font-weight: 700; }
+
+  /* Prioridad dot en el ítem */
+  .task-prio-dot {
+    width: 8px; height: 8px;
     border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .task-prio-dot.priority-high   { background: var(--prio-high); }
+  .task-prio-dot.priority-medium { background: var(--prio-medium); }
+  .task-prio-dot.priority-low    { background: var(--prio-low); }
+  .task-prio-dot.priority-none   { background: var(--border); }
+
+  .task-item-body { flex: 1; min-width: 0; }
+  .task-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .task-item-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .task-item-meta span { display: flex; align-items: center; gap: 3px; }
+
+  /* Acciones del ítem (visibles en hover) */
+  .task-item-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+  .task-item:hover .task-item-actions { opacity: 1; }
+  .task-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.1s;
+  }
+  .task-action-btn:hover { background: var(--border); color: var(--text); }
+  .task-action-btn.del:hover { color: var(--prio-high); }
+
+  /* Grupo de fecha en la lista */
+  .task-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 10px 4px;
   }
 
-  /* MODAL */
+  /* ─── MODAL DE EVENTO (sin cambios) ─────────────────── */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -293,11 +770,7 @@
     pointer-events: none;
     transition: opacity 0.2s;
   }
-
-  .modal-overlay.open {
-    opacity: 1;
-    pointer-events: all;
-  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
 
   .modal {
     background: var(--surface);
@@ -309,20 +782,11 @@
     transition: transform 0.2s;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   }
-
   .modal-overlay.open .modal { transform: translateY(0); }
 
-  .modal h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: var(--accent);
-  }
+  .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--accent); }
 
-  .form-group {
-    margin-bottom: 14px;
-  }
-
+  .form-group { margin-bottom: 14px; }
   .form-group label {
     display: block;
     font-size: 12px;
@@ -332,8 +796,9 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-
-  .form-group input, .form-group select {
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
     width: 100%;
     background: var(--bg);
     border: 1px solid var(--border);
@@ -345,42 +810,24 @@
     outline: none;
     transition: border-color 0.15s;
   }
-
-  .form-group input:focus, .form-group select:focus {
-    border-color: var(--accent);
-  }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--accent); }
 
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-  .color-picker {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .color-opt {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 3px solid transparent;
-    transition: all 0.15s;
-  }
-
+  .color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-opt { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; }
   .color-opt.selected { border-color: white; transform: scale(1.15); }
   .color-opt[data-c="orange"] { background: #f5a623; }
-  .color-opt[data-c="blue"] { background: #4e8ef7; }
-  .color-opt[data-c="green"] { background: #42b883; }
+  .color-opt[data-c="blue"]   { background: #4e8ef7; }
+  .color-opt[data-c="green"]  { background: #42b883; }
   .color-opt[data-c="purple"] { background: #a78bfa; }
-  .color-opt[data-c="pink"] { background: #f472b6; }
-  .color-opt[data-c="red"] { background: #f87171; }
+  .color-opt[data-c="pink"]   { background: #f472b6; }
+  .color-opt[data-c="red"]    { background: #f87171; }
 
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    justify-content: flex-end;
-  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
 
   .btn-cancel {
     background: none;
@@ -393,7 +840,6 @@
     font-size: 14px;
     transition: all 0.15s;
   }
-
   .btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
 
   .btn-save {
@@ -408,7 +854,6 @@
     font-size: 14px;
     transition: all 0.15s;
   }
-
   .btn-save:hover { background: var(--accent2); }
 
   .btn-delete {
@@ -423,10 +868,9 @@
     margin-right: auto;
     transition: all 0.15s;
   }
-
   .btn-delete:hover { background: rgba(248,113,113,0.3); }
 
-  /* Event detail popup */
+  /* ─── POPUP DE EVENTO ────────────────────────────────── */
   .ev-popup {
     position: fixed;
     background: var(--surface);
@@ -438,13 +882,12 @@
     box-shadow: 0 10px 40px rgba(0,0,0,0.4);
     display: none;
   }
-
   .ev-popup.show { display: block; }
   .ev-popup h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .ev-popup .ep-time { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-family: 'DM Mono', monospace; }
-  .ev-popup .ep-sub { font-size: 12px; color: var(--text-muted); }
-  .ev-popup .ep-actions { display: flex; gap: 8px; margin-top: 12px; }
-  .ep-edit, .ep-del {
+  .ev-popup .ep-sub  { font-size: 12px; color: var(--text-muted); }
+  .ev-popup .ep-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .ep-edit, .ep-del, .ep-add-task {
     padding: 5px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -455,10 +898,13 @@
     transition: all 0.15s;
   }
   .ep-edit { background: var(--accent); color: var(--event-text); }
-  .ep-del { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
-  .ep-del:hover { background: rgba(248,113,113,0.3); }
+  .ep-del  { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+  .ep-del:hover  { background: rgba(248,113,113,0.3); }
+  /* Botón agregar tarea desde popup de evento */
+  .ep-add-task { background: rgba(66,184,131,0.15); color: #42b883; border: 1px solid rgba(66,184,131,0.3); }
+  .ep-add-task:hover { background: rgba(66,184,131,0.3); }
 
-  /* Recurring toggle */
+  /* ─── TOGGLE RECURRENCIA ─────────────────────────────── */
   .recurring-toggle {
     display: flex;
     align-items: center;
@@ -474,39 +920,200 @@
   }
   .recurring-toggle:hover { border-color: var(--accent); }
   .recurring-toggle.active { border-color: var(--accent); background: rgba(245,166,35,0.08); }
-  .toggle-switch {
-    width: 36px; height: 20px;
-    background: var(--border);
-    border-radius: 10px;
-    position: relative;
-    transition: background 0.2s;
-    flex-shrink: 0;
-  }
-  .toggle-switch::after {
-    content: '';
-    position: absolute;
-    width: 14px; height: 14px;
-    background: #fff;
-    border-radius: 50%;
-    top: 3px; left: 3px;
-    transition: transform 0.2s;
-  }
+  .toggle-switch { width: 36px; height: 20px; background: var(--border); border-radius: 10px; position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .toggle-switch::after { content: ''; position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
   .recurring-toggle.active .toggle-switch { background: var(--accent); }
   .recurring-toggle.active .toggle-switch::after { transform: translateX(16px); }
   .toggle-label { font-size: 13px; color: var(--text-muted); }
   .recurring-toggle.active .toggle-label { color: var(--accent); font-weight: 600; }
+  .ev-recurring-badge { position: absolute; top: 3px; right: 5px; font-size: 9px; opacity: 0.7; }
 
-  /* Badge en evento recurrente */
-  .ev-recurring-badge {
-    position: absolute;
-    top: 3px; right: 5px;
-    font-size: 9px;
-    opacity: 0.7;
+  /* ─── MODAL DE TAREA ─────────────────────────────────── */
+  /* Reutiliza .modal-overlay pero con id propio */
+  #taskModalOverlay .modal { width: 420px; }
+
+  /* Badge de prioridad en el modal */
+  .prio-picker { display: flex; gap: 8px; }
+  .prio-opt {
+    flex: 1;
+    padding: 7px 0;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+    background: var(--bg);
+    color: var(--text-muted);
+  }
+  .prio-opt[data-p="high"]   { border-color: rgba(248,113,113,0.3); }
+  .prio-opt[data-p="medium"] { border-color: rgba(245,166,35,0.3); }
+  .prio-opt[data-p="low"]    { border-color: rgba(66,184,131,0.3); }
+  .prio-opt[data-p="none"]   { border-color: var(--border); }
+  .prio-opt[data-p="high"].selected   { background: rgba(248,113,113,0.15); border-color: var(--prio-high); color: var(--prio-high); }
+  .prio-opt[data-p="medium"].selected { background: rgba(245,166,35,0.15); border-color: var(--prio-medium); color: var(--prio-medium); }
+  .prio-opt[data-p="low"].selected    { background: rgba(66,184,131,0.15); border-color: var(--prio-low); color: var(--prio-low); }
+  .prio-opt[data-p="none"].selected   { background: var(--border); border-color: var(--text-muted); color: var(--text); }
+
+  /* ═══════════════════════════════════════════════════════
+     RESPONSIVE — TABLET (≤ 900px): 3 columnas
+  ═══════════════════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .month-label { min-width: 120px; font-size: 15px; }
+    .save-btn { display: none; } /* en tablet se guarda con el botón flotante */
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     RESPONSIVE — MÓVIL (≤ 600px): 1 columna
+  ═══════════════════════════════════════════════════════ */
+  @media (max-width: 600px) {
+    /* Variables ajustadas */
+    :root {
+      --hour-w: 44px;
+      --row-h: 56px;
+    }
+
+    /* Topbar compacto */
+    .topbar {
+      padding: 10px 12px;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+    .logo { font-size: 16px; }
+    .month-label {
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 0;
+      flex: 1;
+      text-align: center;
+    }
+    /* Ocultar botones menos prioritarios en móvil */
+    .today-btn,
+    .tasks-toggle-btn .btn-label,
+    .save-btn { display: none; }
+
+    .add-btn {
+      padding: 7px 10px;
+      font-size: 18px;
+      line-height: 1;
+      border-radius: 50%;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tasks-toggle-btn {
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+    .nav-btn { padding: 6px 10px; font-size: 16px; }
+
+    /* Grid: solo mostrar 1 columna del día activo */
+    .day-headers {
+      grid-template-columns: var(--hour-w) 1fr !important;
+    }
+    .time-grid {
+      grid-template-columns: var(--hour-w) 1fr !important;
+    }
+
+    /* Ocultar columnas de días no activos */
+    .day-col { display: none; }
+    .day-col.active-day { display: block; }
+
+    /* Cabeceras: ocultar las no activas */
+    .day-header { display: none; }
+    .day-header.active-day { display: block; }
+
+    /* Eventos más grandes y legibles en móvil */
+    .event { font-size: 13px; border-radius: 10px; padding: 6px 10px; }
+    .event .ev-title { font-size: 13px; white-space: normal; line-height: 1.3; }
+    .event .ev-sub { font-size: 11px; white-space: normal; }
+
+    /* Panel de tareas: full width en móvil */
+    .task-panel {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100% !important;
+      z-index: 90;
+      border-left: none !important;
+    }
+    .task-panel.hidden { width: 0 !important; opacity: 0; }
+
+    /* Modales más angostos */
+    .modal { width: calc(100vw - 24px) !important; padding: 20px 16px !important; }
+    #taskModalOverlay .modal { width: calc(100vw - 24px) !important; }
+    .note-modal-box { width: calc(100vw - 24px) !important; }
+
+    /* Barra inferior de días (navegación por día en móvil) */
+    .day-nav-bar {
+      display: flex !important;
+    }
+  }
+
+  /* Barra inferior de días — solo visible en móvil */
+  .day-nav-bar {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 80;
+    padding: 6px 4px env(safe-area-inset-bottom, 6px);
+    gap: 2px;
+  }
+  .day-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 2px;
+    border-radius: 10px;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+  .day-nav-btn:hover,
+  .day-nav-btn:active { background: rgba(245,166,35,0.08); }
+  .day-nav-btn.active-day {
+    background: rgba(245,166,35,0.12);
+  }
+  .day-nav-name {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+  }
+  .day-nav-num {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: background 0.15s;
+  }
+  .day-nav-btn.active-day .day-nav-name { color: var(--accent); }
+  .day-nav-btn.active-day .day-nav-num {
+    background: var(--accent);
+    color: var(--event-text);
+    font-weight: 700;
+  }
+  .day-nav-btn.today-day .day-nav-num {
+    border: 2px solid var(--accent);
+  }
+
+  /* Espacio extra abajo del grid en móvil para no quedar tapado por la barra */
+  @media (max-width: 600px) {
+    .grid-body { padding-bottom: 70px; }
   }
 </style>
 </head>
 <body>
 
+<!-- ─── TOP BAR ───────────────────────────────────────────── -->
 <div class="topbar">
   <span class="logo">📅 Horario</span>
   <div class="nav-btns">
@@ -516,19 +1123,80 @@
   <span class="month-label" id="monthLabel"></span>
   <button class="today-btn" id="todayBtn">Hoy</button>
   <button class="add-btn" id="addBtn">+ Agregar</button>
-  <button class="save-btn" id="saveFileBtn">💾 Guardar archivo</button>
+  <!-- Botón para mostrar/ocultar el panel de tareas -->
+  <button class="tasks-toggle-btn" id="tasksToggleBtn">
+    📋 Tareas
+    <span class="tasks-badge" id="tasksBadge"></span>
+  </button>
+  <button class="save-btn" id="saveFileBtn">💾 Guardar</button>
 </div>
 
-<div class="calendar-wrap">
-  <div class="day-headers" id="dayHeaders">
-    <div></div>
-  </div>
-  <div class="grid-body" id="gridBody">
-    <div class="time-grid" id="timeGrid"></div>
-  </div>
-</div>
+<!-- ─── CONTENIDO PRINCIPAL (calendario + panel tareas) ─── -->
+<div class="main-content">
 
-<!-- Modal -->
+  <!-- Calendario (igual que antes) -->
+  <div class="calendar-wrap">
+    <div class="day-headers" id="dayHeaders">
+      <div></div>
+    </div>
+    <div class="grid-body" id="gridBody">
+      <div class="time-grid" id="timeGrid"></div>
+    </div>
+  </div>
+
+  <!-- Panel de tareas (nueva feature) -->
+  <div class="task-panel hidden" id="taskPanel">
+    <div class="task-panel-header">
+      <div class="task-panel-title">
+        ✅ Tareas
+        <span class="pending-count" id="pendingCountLabel">0 pendientes</span>
+      </div>
+
+      <!-- Quick-add: escribir título y presionar + -->
+      <div class="task-quick-add">
+        <input
+          class="task-quick-input"
+          id="taskQuickInput"
+          type="text"
+          placeholder="Nueva tarea rápida..."
+        />
+        <button class="task-quick-add-btn" id="taskQuickAddBtn" title="Agregar tarea">+</button>
+      </div>
+
+      <!-- Filtros y ordenamiento -->
+      <div class="task-filters">
+        <select class="filter-select" id="taskFilterStatus" title="Filtrar por estado">
+          <option value="all">Todas</option>
+          <option value="pending">Pendientes</option>
+          <option value="done">Completadas</option>
+        </select>
+        <select class="filter-select" id="taskFilterPriority" title="Filtrar por prioridad">
+          <option value="all">Toda prioridad</option>
+          <option value="high">🔴 Alta</option>
+          <option value="medium">🟡 Media</option>
+          <option value="low">🟢 Baja</option>
+          <option value="none">⚪ Sin prioridad</option>
+        </select>
+        <select class="sort-select" id="taskSort" title="Ordenar por">
+          <option value="date">Por fecha</option>
+          <option value="priority">Por prioridad</option>
+          <option value="created">Más recientes</option>
+          <option value="status">Por estado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Lista dinámica de tareas -->
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+</div><!-- /main-content -->
+
+<!-- ─── BARRA INFERIOR DE DÍAS (solo móvil) ──────────── -->
+<div class="day-nav-bar" id="dayNavBar"></div>
+
+
+<!-- ─── MODAL DE EVENTO (sin cambios estructurales) ──────── -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2 id="modalTitle">Nueva Clase</h2>
@@ -540,12 +1208,10 @@
       <label>Salón / Ubicación</label>
       <input type="text" id="evLocation" placeholder="Ej: Bloque 11-12, Aula 3">
     </div>
-    <!-- Toggle recurrencia -->
     <div class="recurring-toggle" id="recurringToggle">
       <div class="toggle-switch"></div>
       <span class="toggle-label">🔁 Se repite cada semana</span>
     </div>
-    <!-- Día (para recurrentes) -->
     <div class="form-row" id="dayPickerRow">
       <div class="form-group">
         <label>Día de la semana</label>
@@ -561,7 +1227,6 @@
       </div>
       <div class="form-group"></div>
     </div>
-    <!-- Fecha exacta (para actividades) -->
     <div class="form-group" id="datePickerRow" style="display:none">
       <label>Fecha exacta</label>
       <input type="date" id="evDate">
@@ -595,85 +1260,299 @@
   </div>
 </div>
 
-  <div class="ev-popup" id="evPopup">
+<!-- ─── MODAL DE TAREA ────────────────────────────────────── -->
+<div class="modal-overlay" id="taskModalOverlay">
+  <div class="modal">
+    <h2 id="taskModalTitle">Nueva Tarea</h2>
+
+    <div class="form-group">
+      <label>Título *</label>
+      <input type="text" id="tkTitle" placeholder="Ej: Leer capítulo 4 de SO">
+    </div>
+
+    <div class="form-group">
+      <label>Descripción (opcional)</label>
+      <textarea id="tkDesc" placeholder="Detalles, notas, referencias..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Prioridad</label>
+      <div class="prio-picker" id="prioPicker">
+        <div class="prio-opt" data-p="high">🔴 Alta</div>
+        <div class="prio-opt selected" data-p="medium">🟡 Media</div>
+        <div class="prio-opt" data-p="low">🟢 Baja</div>
+        <div class="prio-opt" data-p="none">⚪ Sin prioridad</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="tkDate">
+      </div>
+      <div class="form-group">
+        <label>Hora del bloque</label>
+        <select id="tkHour">
+          <!-- generado en JS -->
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Vincular a evento (opcional)</label>
+      <select id="tkEventLink">
+        <option value="">— Sin vincular —</option>
+        <!-- llenado dinámicamente -->
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-delete" id="btnTaskDelete" style="display:none">Eliminar</button>
+      <button class="btn-cancel" id="btnTaskCancel">Cancelar</button>
+      <button class="btn-save" id="btnTaskSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── POPUP DE EVENTO (se agrega botón "Agregar tarea") ── -->
+<div class="ev-popup" id="evPopup">
   <h3 id="epTitle"></h3>
   <div class="ep-time" id="epTime"></div>
   <div class="ep-sub" id="epSub"></div>
   <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="epRecurring"></div>
   <div class="ep-actions">
     <button class="ep-edit" id="epEdit">Editar</button>
+    <button class="ep-add-task" id="epAddTask">+ Tarea</button>
     <button class="ep-del" id="epDel">Eliminar</button>
   </div>
 </div>
 
+<!-- ─── MODAL DE APUNTES ──────────────────────────────────── -->
+<div id="noteModal">
+  <div class="note-modal-box">
+    <!-- Franja de color del evento -->
+    <div class="note-modal-stripe" id="noteModalStripe"></div>
+    <div class="note-modal-header">
+      <div>
+        <div class="note-modal-title" id="noteModalTitle">📝 Apuntes</div>
+        <div class="note-modal-subtitle" id="noteModalSubtitle"></div>
+      </div>
+      <button class="note-modal-close" id="noteModalClose" title="Cerrar (Esc)">✕</button>
+    </div>
+    <textarea
+      id="noteTextarea"
+      placeholder="Escribe aquí tus apuntes, ideas o información extra para esta clase o actividad...&#10;&#10;Ctrl+Enter para guardar rápido."
+      maxlength="2000"
+    ></textarea>
+    <div class="note-modal-footer">
+      <span class="note-char-count"><span id="noteCharCount">0</span>/2000</span>
+      <div class="note-modal-actions">
+        <button class="note-clear-btn" id="noteClearBtn">Borrar apunte</button>
+        <button class="note-save-btn" id="noteSaveBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SCRIPT ────────────────────────────────────────────── -->
 <script>
-const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const HOURS = Array.from({length: 24}, (_, i) => i); // 12am - 11pm
+const SERVER = window.location.origin;
+const DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const HOURS = Array.from({length: 24}, (_, i) => i);
 
-let weekOffset = 0;
+// --- Estado del calendario ---
+let weekOffset   = 0;
 let selectedColor = 'orange';
-let editingId = null;
-let isRecurring = true;
-let events = /*EVENTS_DATA*/[]/*END_EVENTS*/;
+let editingId    = null;
+let isRecurring  = true;
+let events       = [];
+let activeDayIndex = new Date().getDay(); // columna activa en móvil (0=Dom…6=Sáb)
 
-// Toggle recurrencia
-const recurringToggle = document.getElementById('recurringToggle');
-recurringToggle.addEventListener('click', () => {
-  isRecurring = !isRecurring;
-  recurringToggle.classList.toggle('active', isRecurring);
-  document.getElementById('dayPickerRow').style.display = isRecurring ? '' : 'none';
-  document.getElementById('datePickerRow').style.display = isRecurring ? 'none' : '';
-  document.getElementById('modalTitle').textContent = editingId
-    ? (isRecurring ? 'Editar Clase' : 'Editar Actividad')
-    : (isRecurring ? 'Nueva Clase' : 'Nueva Actividad');
-});
+// --- Estado del sistema de tareas ---
+let tasks         = [];        // Array de objetos tarea
+let editingTaskId = null;      // ID de tarea en edición (null = nueva)
+let selectedPriority = 'medium'; // Prioridad seleccionada en modal de tarea
+let taskPanelOpen = false;     // Estado del panel lateral
 
-async function save() {
-  try {
-    await fetch('http://localhost:8989/eventos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(events)
-    });
-  } catch(e) {
-    // Si el servidor no está corriendo, no hace nada
-  }
-}
+// --- Apuntes de bloque ---
+// Objeto plano: { "2026-03-10-8": "texto...", ... }
+// Clave: "YYYY-MM-DD-H" (fecha ISO + hora numérica sin padding)
+let blockNotes = {};
 
-async function cargarEventos() {
-  try {
-    const res = await fetch('http://localhost:8989/eventos');
-    const data = await res.json();
-    if (Array.isArray(data) && data.length > 0) {
-      events = data;
-    }
-  } catch(e) {
-    // Sin servidor, usa los eventos embebidos
-  }
-  render();
-}
+// ═══════════════════════════════════════════════════════════
+//  HELPERS DE FECHA / HORA
+// ═══════════════════════════════════════════════════════════
 
+/** Devuelve la fecha de inicio de la semana actual + offset */
 function getWeekStart() {
   const today = new Date();
   const d = new Date(today);
   d.setDate(today.getDate() - today.getDay() + weekOffset * 7);
-  d.setHours(0,0,0,0);
+  d.setHours(0, 0, 0, 0);
   return d;
 }
 
+/** Formatea hora numérica como "08:00 – 09:00" */
+function fmtHourRange(hour) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(hour)}:00`;
+}
+
+/** Etiqueta legible de hora */
+function fmtHourLabel(h) {
+  if (h === 0) return '12 am';
+  if (h < 12)  return h + ' am';
+  if (h === 12) return '12 pm';
+  return (h - 12) + ' pm';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PERSISTENCIA (EVENTOS)
+// ═══════════════════════════════════════════════════════════
+
+async function save() {
+  try {
+    await fetch(`${SERVER}/eventos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(events)
+    });
+  } catch (e) { /* sin servidor */ }
+}
+
+async function cargarEventos() {
+  try {
+    const res  = await fetch(`${SERVER}/eventos`);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) events = data;
+  } catch (e) { /* sin servidor, usa array vacío */ }
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PERSISTENCIA (TAREAS)
+// ═══════════════════════════════════════════════════════════
+
+async function saveTasks() {
+  try {
+    await fetch(`${SERVER}/tareas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tasks)
+    });
+  } catch (e) { /* sin servidor */ }
+}
+
+async function cargarTareas() {
+  try {
+    const res  = await fetch(`${SERVER}/tareas`);
+    const data = await res.json();
+    if (Array.isArray(data)) tasks = data;
+  } catch (e) { tasks = []; }
+  renderTasks();
+  updateTaskBadge();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PERSISTENCIA (NOTAS DE BLOQUE)
+// ═══════════════════════════════════════════════════════════
+
+async function saveNotes() {
+  try {
+    await fetch(`${SERVER}/notas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(blockNotes)
+    });
+  } catch (e) { /* sin servidor */ }
+}
+
+async function cargarNotas() {
+  try {
+    const res  = await fetch(`${SERVER}/notas`);
+    const data = await res.json();
+    // El servidor devuelve un objeto {}, no un array
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      blockNotes = data;
+    }
+  } catch (e) { blockNotes = {}; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS RESPONSIVE
+// ═══════════════════════════════════════════════════════════
+
+function isMobile() { return window.innerWidth <= 600; }
+
+/**
+ * Construye la barra inferior de días (solo visible en móvil).
+ * @param {string[]} dayDates — array de 7 fechas ISO de la semana actual
+ */
+function renderDayNavBar(dayDates) {
+  const bar = document.getElementById('dayNavBar');
+  bar.innerHTML = '';
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  dayDates.forEach((dateStr, i) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    const isToday   = dateStr === todayStr;
+    const isActive  = i === activeDayIndex;
+
+    const btn = document.createElement('button');
+    btn.className = `day-nav-btn${isActive ? ' active-day' : ''}${isToday ? ' today-day' : ''}`;
+    btn.innerHTML = `
+      <span class="day-nav-name">${DAYS_ES[d.getDay()]}</span>
+      <span class="day-nav-num">${d.getDate()}</span>
+    `;
+    btn.addEventListener('click', () => {
+      activeDayIndex = i;
+      applyActiveDayMobile();
+      renderDayNavBar(dayDates); // actualiza estado activo
+    });
+    bar.appendChild(btn);
+  });
+}
+
+/**
+ * En móvil: muestra solo la columna del día activo, oculta las demás.
+ */
+function applyActiveDayMobile() {
+  if (!isMobile()) return;
+
+  // Cabeceras
+  document.querySelectorAll('.day-header').forEach((el, i) => {
+    el.classList.toggle('active-day', i === activeDayIndex);
+  });
+
+  // Columnas del grid (cada día-col dentro de time-grid)
+  // Las columnas están intercaladas: por cada fila hay 7 day-cols
+  // Pero con grid-template-columns 1fr ya CSS las colapsa — solo necesitamos
+  // marcar cuál day-col es la activa por índice de columna (0-6)
+  document.querySelectorAll('.day-col').forEach((el) => {
+    const idx = parseInt(el.dataset.colIdx ?? -1);
+    el.classList.toggle('active-day', idx === activeDayIndex);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER PRINCIPAL DEL CALENDARIO
+// ═══════════════════════════════════════════════════════════
+
 function render() {
   const weekStart = getWeekStart();
-  const today = new Date(); today.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
 
-  // Month label
+  // Etiqueta del mes
   const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
   let label = MONTHS_ES[weekStart.getMonth()];
-  if (weekStart.getMonth() !== weekEnd.getMonth()) label += ' – ' + MONTHS_ES[weekEnd.getMonth()];
+  if (weekStart.getMonth() !== weekEnd.getMonth())
+    label += ' – ' + MONTHS_ES[weekEnd.getMonth()];
   label += ' ' + weekEnd.getFullYear();
   document.getElementById('monthLabel').textContent = label;
 
-  // Day headers
+  // Cabeceras de días
   const dh = document.getElementById('dayHeaders');
   dh.innerHTML = '<div></div>';
   for (let i = 0; i < 7; i++) {
@@ -685,45 +1564,44 @@ function render() {
     </div>`;
   }
 
-  // Time grid
+  // Grid de tiempo
   const tg = document.getElementById('timeGrid');
   tg.innerHTML = '';
 
-  // Build day date strings for this week
+  // Fechas de esta semana como strings ISO
   const dayDates = Array.from({length: 7}, (_, i) => {
     const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
     return d.toISOString().split('T')[0];
   });
 
-  // Hour rows
+  // Filas por hora
   for (let h = 0; h < HOURS.length; h++) {
     const hr = HOURS[h];
-    // Hour label
     const lbl = document.createElement('div');
     lbl.className = 'hour-label';
-    lbl.textContent = hr === 0 ? '12 am' : hr < 12 ? hr + ' am' : hr === 12 ? '12 pm' : (hr-12) + ' pm';
+    lbl.textContent = fmtHourLabel(hr);
     tg.appendChild(lbl);
 
     for (let d = 0; d < 7; d++) {
       const cell = document.createElement('div');
       cell.className = 'day-col';
+      cell.dataset.colIdx = d; // índice de columna para responsive
       const hcell = document.createElement('div');
       hcell.className = 'hour-cell';
-      hcell.dataset.day = d;
+      hcell.dataset.day  = d;
       hcell.dataset.hour = hr;
+      hcell.dataset.date = dayDates[d];
       hcell.addEventListener('click', () => openModal(null, dayDates[d], hr));
       cell.appendChild(hcell);
       tg.appendChild(cell);
     }
   }
 
-  // Render events
-  const startHour = HOURS[0];
+  // Renderizar eventos
   events.forEach(ev => {
     let dayIdx;
     if (ev.recurring) {
-      // Buscar la columna que coincide con el día de la semana
-      dayIdx = dayDates.findIndex((dateStr, i) => {
+      dayIdx = dayDates.findIndex((dateStr) => {
         const d = new Date(dateStr + 'T00:00:00');
         return d.getDay() === ev.dayOfWeek;
       });
@@ -732,50 +1610,182 @@ function render() {
     }
     if (dayIdx === -1) return;
 
+    // Fecha real de esta ocurrencia (única por semana para recurrentes)
+    const occurrenceDate = dayDates[dayIdx];
+    const noteKey  = `${ev.id}-${occurrenceDate}`;
+    const noteText = blockNotes[noteKey] || '';
+
     const [sh, sm] = ev.start.split(':').map(Number);
     const [eh, em] = ev.end.split(':').map(Number);
-    const topPct = (sh + sm/60) * 60; // px desde medianoche
-    const height = ((eh - sh) + (em - sm)/60) * 60;
-
-    // Find the column cells for this day
-    const cols = tg.querySelectorAll(`.day-col`);
-    // cols index: row * 7 + dayIdx
-    // We need to place event absolutely. Let's use a different approach - overlay per day column.
-    // Actually let me use a overlay div on the grid.
+    const topPct   = (sh + sm / 60) * 60;
+    const height   = ((eh - sh) + (em - sm) / 60) * 60;
 
     const evDiv = document.createElement('div');
     evDiv.className = `event ${ev.color !== 'orange' ? ev.color : ''}`;
-    evDiv.style.top = topPct + 'px';
+    evDiv.style.top    = topPct + 'px';
     evDiv.style.height = Math.max(height, 20) + 'px';
-    evDiv.innerHTML = `<div class="ev-title">${ev.name}</div>${ev.location ? `<div class="ev-sub">${ev.location}</div>` : ''}${ev.recurring ? '<span class="ev-recurring-badge">🔁</span>' : ''}`;
-    evDiv.addEventListener('click', (e) => { e.stopPropagation(); showPopup(ev, e); });
 
-    // We need to place inside the right column
-    // Build a column overlay approach
-    const overlay = getOrCreateColOverlay(tg, dayIdx);
+    // Badge de tareas pendientes vinculadas
+    // Agrupa por nombre para capturar tareas vinculadas a cualquier instancia del mismo evento recurrente
+    const sameNameIds = new Set(
+      events.filter(e =>
+        e.name.trim().toLowerCase() === ev.name.trim().toLowerCase() &&
+        e.recurring === ev.recurring
+      ).map(e => e.id)
+    );
+    const linkedTasks = tasks.filter(t => {
+      if (!sameNameIds.has(t.eventId) || t.status !== 'pending') return false;
+      if (!ev.recurring || !t.date) return true;
+      // Para recurrentes: mostrar badge SOLO si la fecha de la tarea cae
+      // exactamente en la ocurrencia de esta semana (mismo día visible)
+      return t.date === occurrenceDate;
+    });
+    const taskBadgeHtml = linkedTasks.length > 0
+      ? `<span class="ev-task-badge" title="${linkedTasks.length} tarea(s) pendiente(s)">${linkedTasks.length}</span>`
+      : '';
+
+    // Indicador de apunte existente
+    const noteIndicatorHtml = noteText
+      ? `<span class="ev-note-indicator" title="Tiene apuntes">📝</span>`
+      : '';
+
+    evDiv.innerHTML = `
+      ${noteIndicatorHtml}
+      <div class="ev-title" style="${noteText ? 'padding-left:16px' : ''}">${ev.name}</div>
+      ${ev.location ? `<div class="ev-sub" style="${noteText ? 'padding-left:16px' : ''}">${ev.location}</div>` : ''}
+      ${ev.recurring ? '<span class="ev-recurring-badge">🔁</span>' : ''}
+      ${taskBadgeHtml}
+      <button class="ev-options-btn" title="Opciones">···</button>
+    `;
+
+    // Click en el card → abre modal de apuntes
+    evDiv.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (e.target.closest('.ev-options-btn')) return; // delegado al botón
+      openNoteEditor(noteKey, noteText, ev, occurrenceDate);
+    });
+
+    // Click en ⋯ → abre popup de opciones (editar/eliminar/tarea)
+    evDiv.querySelector('.ev-options-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopup(ev, e, occurrenceDate);
+    });
+
     evDiv.style.position = 'absolute';
-    evDiv.style.left = '3px';
-    evDiv.style.right = '3px';
+    evDiv.style.left     = '3px';
+    evDiv.style.right    = '3px';
+
+    const overlay = getOrCreateColOverlay(tg, dayIdx);
     overlay.appendChild(evDiv);
   });
 
-  // Current time line
+  // Indicadores de tareas por bloque horario (no vinculadas a evento)
+  addTaskDotsToCells(tg, dayDates);
+
+  // Línea de tiempo actual
   const now = new Date();
   const curDayIdx = dayDates.indexOf(now.toISOString().split('T')[0]);
   if (curDayIdx !== -1) {
     const overlay = getOrCreateColOverlay(tg, curDayIdx);
-    const topPx = (now.getHours() + now.getMinutes()/60) * 60;
+    const topPx = (now.getHours() + now.getMinutes() / 60) * 60;
     const line = document.createElement('div');
     line.className = 'time-line';
     line.style.top = topPx + 'px';
     overlay.appendChild(line);
   }
 
-  // Scroll to 7am (a bit before current time)
-  const scrollTarget = Math.max(0, ((now.getHours() - 1)) * 60);
-  document.getElementById('gridBody').scrollTop = scrollTarget;
+  // Scroll automático solo en la carga inicial — no interrumpir al usuario después
+  if (!render._scrolled) {
+    render._scrolled = true;
+    document.getElementById('gridBody').scrollTop =
+      Math.max(0, (now.getHours() - 1) * 60);
+  }
+
+  // Responsive: barra de días y columna activa en móvil
+  renderDayNavBar(dayDates);
+  applyActiveDayMobile();
 }
 
+/**
+ * Dibuja el indicador pill en las hour-cells que tienen tareas pendientes.
+ * Muestra: barra de prioridad dominante | conteo | mini-dots de otras prioridades.
+ */
+function addTaskDotsToCells(tg, dayDates) {
+  const PRIO_ORDER = { high: 0, medium: 1, low: 2, none: 3 };
+
+  // Agrupar tareas pendientes por "fecha-hora"
+  const tasksBySlot = {};
+  tasks.forEach(t => {
+    if (t.status === 'done') return;
+    if (!t.date || t.hour === undefined || t.hour === null) return;
+    const key = `${t.date}-${t.hour}`;
+    if (!tasksBySlot[key]) tasksBySlot[key] = [];
+    tasksBySlot[key].push(t);
+  });
+
+  for (const [key, slotTasks] of Object.entries(tasksBySlot)) {
+    const lastDash = key.lastIndexOf('-');
+    const dateStr  = key.substring(0, lastDash);
+    const hourNum  = parseInt(key.substring(lastDash + 1), 10);
+
+    const dayIdx = dayDates.indexOf(dateStr);
+    if (dayIdx === -1) continue;
+
+    const allCells = tg.querySelectorAll(
+      `.hour-cell[data-day="${dayIdx}"][data-hour="${hourNum}"]`
+    );
+
+    allCells.forEach(cell => {
+      if (cell.querySelector('.task-indicator')) return; // evitar duplicados
+
+      // Ordenar por prioridad para detectar la dominante
+      const sorted = [...slotTasks].sort(
+        (a, b) => (PRIO_ORDER[a.priority||'none']) - (PRIO_ORDER[b.priority||'none'])
+      );
+      const dominant = sorted[0].priority || 'none';
+
+      // Prioridades secundarias distintas a la dominante (máx 2 dots extra)
+      const secondaryPrios = [...new Set(
+        sorted.slice(1).map(t => t.priority || 'none').filter(p => p !== dominant)
+      )].slice(0, 2);
+
+      // Construir el pill
+      const pill = document.createElement('div');
+      pill.className = 'task-indicator';
+
+      // Tooltip con títulos de las tareas
+      const titles = sorted.map(t => t.title).join('\n');
+      pill.title = titles;
+
+      // Barra de prioridad dominante
+      const bar = document.createElement('span');
+      bar.className = `task-indicator-bar priority-${dominant}`;
+      pill.appendChild(bar);
+
+      // Mini-dots de prioridades secundarias (si las hay)
+      if (secondaryPrios.length > 0) {
+        const dotsWrap = document.createElement('span');
+        dotsWrap.className = 'task-indicator-dots';
+        secondaryPrios.forEach(p => {
+          const d = document.createElement('span');
+          d.className = `task-indicator-dot priority-${p}`;
+          dotsWrap.appendChild(d);
+        });
+        pill.appendChild(dotsWrap);
+      }
+
+      // Conteo
+      const cnt = document.createElement('span');
+      cnt.className = 'task-indicator-count';
+      cnt.textContent = slotTasks.length;
+      pill.appendChild(cnt);
+
+      cell.appendChild(pill);
+    });
+  }
+}
+
+/** Crea o recupera el overlay de columna para colocar eventos */
 function getOrCreateColOverlay(tg, dayIdx) {
   let ov = tg.querySelector(`.col-overlay[data-col="${dayIdx}"]`);
   if (ov) return ov;
@@ -783,46 +1793,51 @@ function getOrCreateColOverlay(tg, dayIdx) {
   ov.className = 'col-overlay';
   ov.dataset.col = dayIdx;
   ov.style.cssText = `position:absolute;top:0;bottom:0;pointer-events:none;`;
-
-  // Calculate left position based on grid
-  // hour col = 60px, each day col = (100% - 60px) / 7
-  ov.style.left = `calc(60px + ${dayIdx} * ((100% - 60px) / 7))`;
+  ov.style.left  = `calc(60px + ${dayIdx} * ((100% - 60px) / 7))`;
   ov.style.width = `calc((100% - 60px) / 7)`;
-
-  // Make event children pointer-events auto
-  ov.addEventListener('click', () => {}, true);
   ov.style.pointerEvents = 'none';
 
-  // Allow clicks on events inside
-  const style = document.createElement('style');
   if (!document.getElementById('overlay-style')) {
+    const style = document.createElement('style');
     style.id = 'overlay-style';
-    style.textContent = '.col-overlay { pointer-events: none; } .col-overlay .event { pointer-events: all; }';
+    style.textContent =
+      '.col-overlay { pointer-events: none; } .col-overlay .event { pointer-events: all; }';
     document.head.appendChild(style);
   }
-
   tg.style.position = 'relative';
   tg.appendChild(ov);
   return ov;
 }
 
-// MODAL
-function openModal(ev, date, hour) {
-  editingId = ev ? ev.id : null;
+// ═══════════════════════════════════════════════════════════
+//  MODAL DE EVENTO
+// ═══════════════════════════════════════════════════════════
 
-  // Determinar si es recurrente
+const recurringToggle = document.getElementById('recurringToggle');
+
+recurringToggle.addEventListener('click', () => {
+  isRecurring = !isRecurring;
+  recurringToggle.classList.toggle('active', isRecurring);
+  document.getElementById('dayPickerRow').style.display  = isRecurring ? '' : 'none';
+  document.getElementById('datePickerRow').style.display = isRecurring ? 'none' : '';
+  document.getElementById('modalTitle').textContent = editingId
+    ? (isRecurring ? 'Editar Clase' : 'Editar Actividad')
+    : (isRecurring ? 'Nueva Clase'  : 'Nueva Actividad');
+});
+
+function openModal(ev, date, hour) {
+  editingId  = ev ? ev.id : null;
   isRecurring = ev ? (ev.recurring !== false) : true;
   recurringToggle.classList.toggle('active', isRecurring);
-  document.getElementById('dayPickerRow').style.display = isRecurring ? '' : 'none';
+  document.getElementById('dayPickerRow').style.display  = isRecurring ? '' : 'none';
   document.getElementById('datePickerRow').style.display = isRecurring ? 'none' : '';
-
   document.getElementById('modalTitle').textContent = ev
     ? (isRecurring ? 'Editar Clase' : 'Editar Actividad')
-    : (isRecurring ? 'Nueva Clase' : 'Nueva Actividad');
+    : (isRecurring ? 'Nueva Clase'  : 'Nueva Actividad');
 
-  document.getElementById('evName').value = ev ? ev.name : '';
+  document.getElementById('evName').value     = ev ? ev.name     : '';
   document.getElementById('evLocation').value = ev ? ev.location : '';
-  
+
   if (isRecurring) {
     if (date) {
       const d = new Date(date + 'T00:00:00');
@@ -831,24 +1846,17 @@ function openModal(ev, date, hour) {
       document.getElementById('evDay').value = ev.dayOfWeek ?? 1;
     }
   } else {
-    // Actividad con fecha exacta
-    if (ev && ev.date) {
-      document.getElementById('evDate').value = ev.date;
-    } else if (date) {
-      document.getElementById('evDate').value = date;
-    } else {
-      document.getElementById('evDate').value = new Date().toISOString().split('T')[0];
-    }
+    if (ev && ev.date) document.getElementById('evDate').value = ev.date;
+    else if (date)     document.getElementById('evDate').value = date;
+    else               document.getElementById('evDate').value = new Date().toISOString().split('T')[0];
   }
 
-  document.getElementById('evStart').value = ev ? ev.start : (hour ? String(hour).padStart(2,'0') + ':00' : '08:00');
-  document.getElementById('evEnd').value = ev ? ev.end : (hour ? String(hour+2).padStart(2,'0') + ':00' : '10:00');
-  
+  document.getElementById('evStart').value = ev ? ev.start : (hour != null ? String(hour).padStart(2,'0') + ':00' : '08:00');
+  document.getElementById('evEnd').value   = ev ? ev.end   : (hour != null ? String(hour+2).padStart(2,'0') + ':00' : '10:00');
+
   const col = ev ? ev.color : 'orange';
   selectedColor = col;
-  document.querySelectorAll('.color-opt').forEach(o => {
-    o.classList.toggle('selected', o.dataset.c === col);
-  });
+  document.querySelectorAll('.color-opt').forEach(o => o.classList.toggle('selected', o.dataset.c === col));
 
   document.getElementById('btnDelete').style.display = ev ? 'block' : 'none';
   document.getElementById('modalOverlay').classList.add('open');
@@ -877,15 +1885,14 @@ document.getElementById('btnSave').onclick = () => {
 
   let evData;
   if (isRecurring) {
-    const dayOfWeek = parseInt(document.getElementById('evDay').value);
     evData = {
       id: editingId || Date.now(),
       name,
       location: document.getElementById('evLocation').value.trim(),
       recurring: true,
-      dayOfWeek,
+      dayOfWeek: parseInt(document.getElementById('evDay').value),
       start: document.getElementById('evStart').value,
-      end: document.getElementById('evEnd').value,
+      end:   document.getElementById('evEnd').value,
       color: selectedColor,
     };
   } else {
@@ -898,16 +1905,13 @@ document.getElementById('btnSave').onclick = () => {
       recurring: false,
       date,
       start: document.getElementById('evStart').value,
-      end: document.getElementById('evEnd').value,
+      end:   document.getElementById('evEnd').value,
       color: selectedColor,
     };
   }
 
-  if (editingId) {
-    events = events.map(e => e.id === editingId ? evData : e);
-  } else {
-    events.push(evData);
-  }
+  if (editingId) events = events.map(e => e.id === editingId ? evData : e);
+  else           events.push(evData);
 
   render(); closeModal(); save();
 };
@@ -919,51 +1923,594 @@ document.getElementById('btnDelete').onclick = () => {
   }
 };
 
-// Popup
-function showPopup(ev, e) {
+// ═══════════════════════════════════════════════════════════
+//  POPUP DE EVENTO
+// ═══════════════════════════════════════════════════════════
+
+let popupCurrentEvent = null;
+
+function showPopup(ev, e, occurrenceDate) {
+  popupCurrentEvent = ev;
   const p = document.getElementById('evPopup');
-  document.getElementById('epTitle').textContent = ev.name;
-  document.getElementById('epTime').textContent = ev.start + ' – ' + ev.end;
-  document.getElementById('epSub').textContent = ev.location;
-  document.getElementById('epRecurring').textContent = ev.recurring ? '🔁 Se repite cada semana' : '📌 Actividad única';
-  
-  const rect = e.target.closest('.event').getBoundingClientRect();
-  p.style.left = Math.min(rect.right + 8, window.innerWidth - 240) + 'px';
-  p.style.top = Math.min(rect.top, window.innerHeight - 160) + 'px';
+  document.getElementById('epTitle').textContent     = ev.name;
+  document.getElementById('epTime').textContent      = ev.start + ' – ' + ev.end;
+  document.getElementById('epSub').textContent       = ev.location;
+  document.getElementById('epRecurring').textContent = ev.recurring
+    ? '🔁 Se repite cada semana' : '📌 Actividad única';
+
+  const btn  = e.target.closest('.ev-options-btn');
+  const rect = (btn || e.target.closest('.event')).getBoundingClientRect();
+  p.style.left = Math.min(rect.right + 8, window.innerWidth - 250) + 'px';
+  p.style.top  = Math.min(rect.top, window.innerHeight - 200) + 'px';
   p.classList.add('show');
 
   document.getElementById('epEdit').onclick = () => { hidePopup(); openModal(ev); };
-  document.getElementById('epDel').onclick = () => {
+  document.getElementById('epDel').onclick  = () => {
     events = events.filter(e => e.id !== ev.id);
     render(); hidePopup(); save();
+  };
+  document.getElementById('epAddTask').onclick = () => {
+    hidePopup();
+    openTaskModal(null, { eventId: ev.id, eventName: ev.name, date: occurrenceDate });
   };
 }
 
 function hidePopup() {
   document.getElementById('evPopup').classList.remove('show');
+  popupCurrentEvent = null;
 }
 
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.ev-popup') && !e.target.closest('.event')) hidePopup();
 });
 
-document.getElementById('prevWeek').onclick = () => { weekOffset--; render(); };
-document.getElementById('nextWeek').onclick = () => { weekOffset++; render(); };
-document.getElementById('todayBtn').onclick = () => { weekOffset = 0; render(); };
-document.getElementById('addBtn').onclick = () => openModal(null);
+// ═══════════════════════════════════════════════════════════
+//  PANEL DE TAREAS — TOGGLE
+// ═══════════════════════════════════════════════════════════
+
+document.getElementById('tasksToggleBtn').addEventListener('click', () => {
+  taskPanelOpen = !taskPanelOpen;
+  document.getElementById('taskPanel').classList.toggle('hidden', !taskPanelOpen);
+  document.getElementById('tasksToggleBtn').classList.toggle('active', taskPanelOpen);
+  if (taskPanelOpen) renderTasks();
+});
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER DE TAREAS
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Aplica filtros y orden al array de tareas y actualiza la lista en el DOM.
+ */
+function renderTasks() {
+  const statusFilter   = document.getElementById('taskFilterStatus').value;
+  const priorityFilter = document.getElementById('taskFilterPriority').value;
+  const sortBy         = document.getElementById('taskSort').value;
+
+  // 1. Filtrar
+  let filtered = tasks.filter(t => {
+    if (statusFilter === 'pending' && t.status !== 'pending') return false;
+    if (statusFilter === 'done'    && t.status !== 'done')    return false;
+    if (priorityFilter !== 'all'   && t.priority !== priorityFilter) return false;
+    return true;
+  });
+
+  // 2. Ordenar
+  const PRIO_ORDER = { high: 0, medium: 1, low: 2, none: 3, undefined: 3 };
+  filtered.sort((a, b) => {
+    if (sortBy === 'priority') return (PRIO_ORDER[a.priority] || 3) - (PRIO_ORDER[b.priority] || 3);
+    if (sortBy === 'created')  return b.createdAt - a.createdAt;
+    if (sortBy === 'status')   return (a.status === 'done' ? 1 : 0) - (b.status === 'done' ? 1 : 0);
+    // Por fecha (default)
+    const da = (a.date || '9999') + '-' + String(a.hour ?? 99).padStart(2,'0');
+    const db = (b.date || '9999') + '-' + String(b.hour ?? 99).padStart(2,'0');
+    return da.localeCompare(db);
+  });
+
+  // 3. Renderizar
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+
+  const pending = tasks.filter(t => t.status === 'pending').length;
+  document.getElementById('pendingCountLabel').textContent =
+    pending === 0 ? 'todo al día ✓' : `${pending} pendiente${pending !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="task-empty">
+      <span>${statusFilter === 'done' ? '🎉' : '📭'}</span>
+      ${statusFilter === 'done' ? 'Nada completado aún.' : 'Sin tareas. ¡Todo al día!'}
+    </div>`;
+    return;
+  }
+
+  // Agrupar por fecha si el orden es por fecha
+  if (sortBy === 'date') {
+    const groups = {};
+    filtered.forEach(t => {
+      const key = t.date || '(sin fecha)';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(t);
+    });
+
+    const today    = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+    for (const [dateKey, groupTasks] of Object.entries(groups)) {
+      const label = document.createElement('div');
+      label.className = 'task-group-label';
+      if (dateKey === today)    label.textContent = '📌 Hoy';
+      else if (dateKey === tomorrow) label.textContent = '⏭ Mañana';
+      else if (dateKey === '(sin fecha)') label.textContent = '⚪ Sin fecha';
+      else {
+        const d = new Date(dateKey + 'T00:00:00');
+        label.textContent = d.toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
+      }
+      list.appendChild(label);
+      groupTasks.forEach(t => list.appendChild(buildTaskItem(t)));
+    }
+  } else {
+    filtered.forEach(t => list.appendChild(buildTaskItem(t)));
+  }
+
+  updateTaskBadge();
+}
+
+/**
+ * Crea el elemento DOM de un ítem de tarea.
+ */
+function buildTaskItem(t) {
+  const item = document.createElement('div');
+  item.className = `task-item ${t.status === 'done' ? 'done' : ''}`;
+  item.dataset.id = t.id;
+
+  // Metadata: hora + evento vinculado
+  const linkedEvent = t.eventId ? events.find(e => e.id === t.eventId) : null;
+  const metaHtml = [
+    t.date && t.hour != null
+      ? `<span>🕐 ${t.date} ${fmtHourLabel(t.hour)}</span>` : '',
+    linkedEvent
+      ? `<span>📎 ${linkedEvent.name}</span>` : '',
+  ].filter(Boolean).join('');
+
+  item.innerHTML = `
+    <div class="task-check" data-id="${t.id}" title="${t.status === 'done' ? 'Marcar pendiente' : 'Marcar completada'}"></div>
+    <span class="task-prio-dot priority-${t.priority || 'none'}"></span>
+    <div class="task-item-body">
+      <div class="task-item-title">${escHtml(t.title)}</div>
+      ${metaHtml ? `<div class="task-item-meta">${metaHtml}</div>` : ''}
+      ${t.description ? `<div class="task-item-meta" style="margin-top:3px;color:var(--text-muted)">${escHtml(t.description.substring(0,60))}${t.description.length > 60 ? '…' : ''}</div>` : ''}
+    </div>
+    <div class="task-item-actions">
+      <button class="task-action-btn edit-btn" data-id="${t.id}" title="Editar">✏️</button>
+      <button class="task-action-btn del btn" data-id="${t.id}" title="Eliminar">🗑</button>
+    </div>
+  `;
+
+  // Toggle completado
+  item.querySelector('.task-check').addEventListener('click', () => toggleTaskStatus(t.id));
+
+  // Editar
+  item.querySelector('.edit-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openTaskModal(t);
+  });
+
+  // Eliminar
+  item.querySelector('.del').addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteTask(t.id);
+  });
+
+  return item;
+}
+
+/** Escapa HTML para evitar XSS en contenido de usuario */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/** Actualiza el badge de tareas pendientes en el botón del topbar */
+function updateTaskBadge() {
+  const pending = tasks.filter(t => t.status === 'pending').length;
+  const badge   = document.getElementById('tasksBadge');
+  if (pending > 0) {
+    badge.textContent = pending > 9 ? '9+' : pending;
+    badge.classList.add('visible');
+  } else {
+    badge.classList.remove('visible');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CRUD DE TAREAS
+// ═══════════════════════════════════════════════════════════
+
+/** Alterna el estado pendiente/completada de una tarea */
+function toggleTaskStatus(id) {
+  tasks = tasks.map(t => t.id === id
+    ? { ...t, status: t.status === 'done' ? 'pending' : 'done' }
+    : t
+  );
+  renderTasks();
+  render();        // Actualiza dots en el calendario
+  saveTasks();
+}
+
+/** Elimina una tarea */
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  renderTasks();
+  render();
+  saveTasks();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODAL DE TAREA
+// ═══════════════════════════════════════════════════════════
+
+/** Llena el select de horas en el modal de tarea */
+function buildHourSelect() {
+  const sel = document.getElementById('tkHour');
+  sel.innerHTML = '<option value="">— Ninguna —</option>';
+  for (let h = 0; h < 24; h++) {
+    const opt = document.createElement('option');
+    opt.value = h;
+    opt.textContent = fmtHourLabel(h) + ` (${String(h).padStart(2,'0')}:00)`;
+    sel.appendChild(opt);
+  }
+}
+
+/** Llena el select de eventos vinculables, ocultando eventos únicos ya pasados */
+function buildEventSelect(preselectedId) {
+  const sel = document.getElementById('tkEventLink');
+  sel.innerHTML = '<option value="">— Sin vincular —</option>';
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // Para recurrentes: deduplicar por nombre, usar el primer id que aparezca
+  const seenRecurringNames = new Set();
+
+  events
+    .filter(ev => {
+      if (ev.recurring) {
+        // Deduplicar por nombre en minúsculas para evitar duplicados por capitalización
+        const key = ev.name.trim().toLowerCase();
+        if (seenRecurringNames.has(key)) return false;
+        seenRecurringNames.add(key);
+        return true;
+      }
+      // Eventos únicos: solo si su fecha es hoy o futura
+      return ev.date >= todayStr || ev.id === preselectedId;
+    })
+    .forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev.id;
+      opt.textContent = ev.name + (ev.recurring ? ' (semanal)' : ` — ${ev.date}`);
+      if (ev.id === preselectedId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+}
+
+/**
+ * Abre el modal de tarea.
+ * @param {object|null} task  - Tarea a editar (null = nueva)
+ * @param {object}      prefill - Datos de prefill { eventId, eventName, date, hour }
+ */
+function openTaskModal(task, prefill = {}) {
+  editingTaskId    = task ? task.id : null;
+  selectedPriority = task ? (task.priority || 'medium') : 'medium';
+
+  document.getElementById('taskModalTitle').textContent = task ? 'Editar Tarea' : 'Nueva Tarea';
+  document.getElementById('tkTitle').value = task ? task.title : '';
+  document.getElementById('tkDesc').value  = task ? (task.description || '') : '';
+
+  // Fecha: tarea > prefill > hoy
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('tkDate').value  = task ? (task.date || today) : (prefill.date || today);
+
+  buildHourSelect();
+  buildEventSelect(task ? task.eventId : (prefill.eventId || null));
+
+  // Prefill de hora
+  const hourVal = task ? task.hour : (prefill.hour ?? '');
+  document.getElementById('tkHour').value = hourVal !== '' && hourVal !== null ? hourVal : '';
+
+  // Seleccionar prioridad
+  document.querySelectorAll('.prio-opt').forEach(o => {
+    o.classList.toggle('selected', o.dataset.p === selectedPriority);
+  });
+
+  document.getElementById('btnTaskDelete').style.display = task ? 'block' : 'none';
+  document.getElementById('taskModalOverlay').classList.add('open');
+}
+
+document.getElementById('btnTaskCancel').onclick = closeTaskModal;
+document.getElementById('taskModalOverlay').onclick = (e) => {
+  if (e.target === e.currentTarget) closeTaskModal();
+};
+function closeTaskModal() {
+  document.getElementById('taskModalOverlay').classList.remove('open');
+  editingTaskId = null;
+}
+
+// Selector de prioridad en el modal de tarea
+document.querySelectorAll('.prio-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    selectedPriority = opt.dataset.p;
+    document.querySelectorAll('.prio-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+  });
+});
+
+// Guardar tarea
+document.getElementById('btnTaskSave').onclick = () => {
+  const title = document.getElementById('tkTitle').value.trim();
+  if (!title) { document.getElementById('tkTitle').focus(); return; }
+
+  const hourRaw      = document.getElementById('tkHour').value;
+  const eventLinkRaw = document.getElementById('tkEventLink').value;
+  const taskDate     = document.getElementById('tkDate').value || null;
+
+  // Para eventos recurrentes: resolver el id de la instancia cuyo dayOfWeek
+  // coincida con el día de semana de la fecha de la tarea
+  let resolvedEventId = eventLinkRaw ? parseInt(eventLinkRaw, 10) : null;
+  if (resolvedEventId && taskDate) {
+    const selectedEv = events.find(e => e.id === resolvedEventId);
+    if (selectedEv && selectedEv.recurring) {
+      const taskDow = new Date(taskDate + 'T00:00:00').getDay();
+      const match   = events.find(e =>
+        e.name.trim().toLowerCase() === selectedEv.name.trim().toLowerCase() &&
+        e.recurring && e.dayOfWeek === taskDow
+      );
+      if (match) resolvedEventId = match.id;
+    }
+  }
+
+  const taskData = {
+    id:          editingTaskId || Date.now(),
+    title,
+    description: document.getElementById('tkDesc').value.trim(),
+    status:      editingTaskId
+      ? (tasks.find(t => t.id === editingTaskId)?.status || 'pending')
+      : 'pending',
+    priority:    selectedPriority,
+    date:        taskDate,
+    hour:        hourRaw !== '' ? parseInt(hourRaw, 10) : null,
+    eventId:     resolvedEventId,
+    createdAt:   editingTaskId
+      ? (tasks.find(t => t.id === editingTaskId)?.createdAt || Date.now())
+      : Date.now(),
+  };
+
+  if (editingTaskId) tasks = tasks.map(t => t.id === editingTaskId ? taskData : t);
+  else               tasks.push(taskData);
+
+  closeTaskModal();
+  renderTasks();
+  render();       // Actualiza dots en el calendario
+  saveTasks();
+};
+
+// Eliminar tarea desde el modal
+document.getElementById('btnTaskDelete').onclick = () => {
+  if (editingTaskId) {
+    deleteTask(editingTaskId);
+    closeTaskModal();
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+//  QUICK-ADD DE TAREA (panel lateral)
+// ═══════════════════════════════════════════════════════════
+
+document.getElementById('taskQuickAddBtn').addEventListener('click', quickAddTask);
+document.getElementById('taskQuickInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') quickAddTask();
+});
+
+function quickAddTask() {
+  const input = document.getElementById('taskQuickInput');
+  const title = input.value.trim();
+  if (!title) return;
+
+  tasks.push({
+    id:          Date.now(),
+    title,
+    description: '',
+    status:      'pending',
+    priority:    'medium',
+    date:        new Date().toISOString().split('T')[0],
+    hour:        null,
+    eventId:     null,
+    createdAt:   Date.now(),
+  });
+
+  input.value = '';
+  renderTasks();
+  render();
+  saveTasks();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SWIPE TÁCTIL (móvil) — deslizar para cambiar de día
+// ═══════════════════════════════════════════════════════════
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.getElementById('gridBody').addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.getElementById('gridBody').addEventListener('touchend', (e) => {
+  if (!isMobile()) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  // Solo swipe horizontal con movimiento suficiente y no vertical
+  if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+
+  if (dx < 0) {
+    // Swipe izquierda → día siguiente
+    if (activeDayIndex < 6) {
+      activeDayIndex++;
+    } else {
+      activeDayIndex = 0;
+      weekOffset++;
+      render(); return;
+    }
+  } else {
+    // Swipe derecha → día anterior
+    if (activeDayIndex > 0) {
+      activeDayIndex--;
+    } else {
+      activeDayIndex = 6;
+      weekOffset--;
+      render(); return;
+    }
+  }
+  applyActiveDayMobile();
+  // Actualizar barra de días sin re-render completo
+  const dayDates = Array.from({length: 7}, (_, i) => {
+    const ws = getWeekStart();
+    const d = new Date(ws); d.setDate(ws.getDate() + i);
+    return d.toISOString().split('T')[0];
+  });
+  renderDayNavBar(dayDates);
+}, { passive: true });
+
+// Re-aplicar layout al rotar pantalla o redimensionar
+window.addEventListener('resize', () => {
+  if (!isMobile()) {
+    // En desktop: mostrar todas las columnas
+    document.querySelectorAll('.day-col').forEach(el => el.classList.remove('active-day'));
+    document.querySelectorAll('.day-header').forEach(el => el.classList.remove('active-day'));
+  } else {
+    applyActiveDayMobile();
+  }
+});
+// ═══════════════════════════════════════════════════════════
+
+document.getElementById('taskFilterStatus').addEventListener('change', renderTasks);
+document.getElementById('taskFilterPriority').addEventListener('change', renderTasks);
+document.getElementById('taskSort').addEventListener('change', renderTasks);
+
+// ═══════════════════════════════════════════════════════════
+//  MODAL DE APUNTES DE EVENTO
+// ═══════════════════════════════════════════════════════════
+
+let activeNoteKey = null;
+
+/**
+ * Abre el modal de apuntes para un evento específico.
+ * @param {string}  key            — "eventoId-YYYY-MM-DD"
+ * @param {string}  current        — texto actual (puede ser "")
+ * @param {object}  ev             — objeto evento
+ * @param {string}  occurrenceDate — "YYYY-MM-DD" de esta ocurrencia
+ */
+function openNoteEditor(key, current, ev, occurrenceDate) {
+  activeNoteKey = key;
+  hidePopup();
+
+  const dt = new Date(occurrenceDate + 'T00:00:00');
+  const dateLabel = `${DAYS_ES[dt.getDay()]} ${dt.getDate()} de ${MONTHS_ES[dt.getMonth()]}`;
+
+  // Franja de color del evento
+  const stripe = document.getElementById('noteModalStripe');
+  stripe.className = `note-modal-stripe ${ev.color || 'orange'}`;
+
+  document.getElementById('noteModalTitle').textContent    = `📝 ${ev.name}`;
+  document.getElementById('noteModalSubtitle').textContent =
+    `${dateLabel}  ·  ${ev.start}–${ev.end}${ev.location ? '  ·  ' + ev.location : ''}`;
+
+  const textarea = document.getElementById('noteTextarea');
+  const charCnt  = document.getElementById('noteCharCount');
+  textarea.value = current;
+  charCnt.textContent = current.length;
+  textarea.oninput = () => { charCnt.textContent = textarea.value.length; };
+
+  document.getElementById('noteModal').classList.add('open');
+  setTimeout(() => {
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  }, 50);
+}
+
+function closeNoteEditor() {
+  document.getElementById('noteModal').classList.remove('open');
+  activeNoteKey = null;
+}
+
+function commitNote(text) {
+  if (!activeNoteKey) return;
+  const trimmed = text.trim();
+  if (trimmed) blockNotes[activeNoteKey] = trimmed;
+  else         delete blockNotes[activeNoteKey];
+  closeNoteEditor();
+  render();
+  saveNotes();
+}
+
+document.getElementById('noteSaveBtn').addEventListener('click', () => {
+  commitNote(document.getElementById('noteTextarea').value);
+});
+
+document.getElementById('noteClearBtn').addEventListener('click', () => {
+  document.getElementById('noteTextarea').value = '';
+  document.getElementById('noteCharCount').textContent = '0';
+  commitNote('');
+});
+
+document.getElementById('noteModalClose').addEventListener('click', closeNoteEditor);
+
+// Click en el overlay fuera del box → cerrar sin guardar
+document.getElementById('noteModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeNoteEditor();
+});
+
+// Ctrl+Enter guarda, Escape cierra
+document.getElementById('noteTextarea').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape')                          { closeNoteEditor(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { commitNote(e.target.value); }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  CONTROLES DEL CALENDARIO (topbar)
+// ═══════════════════════════════════════════════════════════
+
+document.getElementById('prevWeek').onclick  = () => { weekOffset--; render(); };
+document.getElementById('nextWeek').onclick  = () => { weekOffset++; render(); };
+document.getElementById('todayBtn').onclick  = () => { weekOffset = 0; render(); };
+document.getElementById('addBtn').onclick    = () => openModal(null);
+
 document.getElementById('saveFileBtn').onclick = async () => {
   await save();
+  await saveTasks();
+  await saveNotes();
   const btn = document.getElementById('saveFileBtn');
   btn.textContent = '✅ Guardado';
   btn.classList.add('saved');
   setTimeout(() => { btn.textContent = '💾 Guardar'; btn.classList.remove('saved'); }, 2000);
 };
 
-cargarEventos();
+// ═══════════════════════════════════════════════════════════
+//  INICIALIZACIÓN
+// ═══════════════════════════════════════════════════════════
 
-// Heartbeat: avisa al servidor que la pestaña sigue abierta
+buildHourSelect(); // Pre-generar opciones de hora
+
+(async () => {
+  await cargarEventos();   // Carga eventos → llama render()
+  await cargarTareas();    // Carga tareas → renderTasks() + updateTaskBadge()
+  await cargarNotas();     // Carga apuntes de bloque
+  render();                // Re-render final con todo el estado
+})();
+
+// Heartbeat al servidor
 setInterval(() => {
-  fetch('http://localhost:8989/ping').catch(() => {});
+  fetch(`${SERVER}/ping`).catch(() => {});
 }, 3000);
 </script>
 </body>
