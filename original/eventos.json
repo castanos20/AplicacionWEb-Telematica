@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1772508796983,
+    "name": "Apoyar IEE",
+    "location": "UD",
+    "recurring": false,
+    "date": "2026-03-03",
+    "start": "14:00",
+    "end": "16:00",
+    "color": "blue"
+  },
+  {
+    "id": 1772508904442,
+    "name": "Estudiar Analisis de sistemas",
+    "location": "Ud",
+    "recurring": false,
+    "date": "2026-01-03",
+    "start": "12:00",
+    "end": "14:00",
+    "color": "green"
+  },
+  {
+    "id": 1772508924976,
+    "name": "Transporte",
+    "location": "",
+    "recurring": false,
+    "date": "2026-03-04",
+    "start": "14:00",
+    "end": "15:00",
+    "color": "red"
+  },
+  {
+    "id": 1772508959435,
+    "name": "Estudiar Analisis",
+    "location": "",
+    "recurring": false,
+    "date": "2026-03-04",
+    "start": "10:00",
+    "end": "12:00",
+    "color": "green"
+  },
+  {
+    "id": 1772509475715,
+    "name": "Estudiar Analisis de sistemas",
+    "location": "Ud",
+    "recurring": false,
+    "date": "2026-03-03",
+    "start": "12:00",
+    "end": "14:00",
+    "color": "green"
+  },
+  {
+    "id": 1772509621140,
+    "name": "Base de Datos Avanzadas",
+    "location": "Lab sistemas Distribuidos",
+    "recurring": true,
+    "dayOfWeek": 1,
+    "start": "16:00",
+    "end": "18:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772509657869,
+    "name": "Analisis de sistemas",
+    "location": "Aula de Informatica 8",
+    "recurring": true,
+    "dayOfWeek": 1,
+    "start": "12:00",
+    "end": "14:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772509766037,
+    "name": "Sistemas Operacionales",
+    "location": "Laboratorio de Ingerieria de software",
+    "recurring": true,
+    "dayOfWeek": 1,
+    "start": "10:00",
+    "end": "12:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772509808981,
+    "name": "Base de datos Avanzadas",
+    "location": "Lab sistemas distribuidos",
+    "recurring": true,
+    "dayOfWeek": 2,
+    "start": "16:00",
+    "end": "18:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772509843293,
+    "name": "Programacion Web",
+    "location": "Sin definir",
+    "recurring": true,
+    "dayOfWeek": 2,
+    "start": "08:00",
+    "end": "10:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772509973870,
+    "name": "Taller de investigacion",
+    "location": "Indefinido",
+    "recurring": true,
+    "dayOfWeek": 2,
+    "start": "10:00",
+    "end": "12:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512325640,
+    "name": "Matematicas Especiales",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 3,
+    "start": "12:00",
+    "end": "14:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512350272,
+    "name": "Sistemas Operacionales",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 3,
+    "start": "06:00",
+    "end": "08:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512505043,
+    "name": "Programacion Web",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 3,
+    "start": "08:00",
+    "end": "10:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512540497,
+    "name": "Analisis de Sistemas",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 4,
+    "start": "08:00",
+    "end": "10:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512558905,
+    "name": "Taller de Investigacion",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 4,
+    "start": "10:00",
+    "end": "12:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512601281,
+    "name": "Matematicas Especiales",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 5,
+    "start": "14:00",
+    "end": "16:00",
+    "color": "orange"
+  },
+  {
+    "id": 1772512632466,
+    "name": "Jurado de votacion",
+    "location": "UD",
+    "recurring": false,
+    "date": "2026-03-08",
+    "start": "07:00",
+    "end": "16:00",
+    "color": "red"
+  },
+  {
+    "id": 1773190776945,
+    "name": "Realizar deberes",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 3,
+    "start": "10:00",
+    "end": "12:00",
+    "color": "green"
+  },
+  {
+    "id": 1773190962666,
+    "name": "Transporte",
+    "location": "",
+    "recurring": true,
+    "dayOfWeek": 3,
+    "start": "14:00",
+    "end": "15:00",
+    "color": "blue"
+  }
+]
