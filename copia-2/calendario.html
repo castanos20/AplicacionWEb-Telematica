@@ -1036,7 +1036,185 @@
   .ev-color-dot.pink   { background: #f778ba; }
   .ev-color-dot.red    { background: #ff7b72; }
 
-  /* ─── MODAL DE EVENTO (sin cambios) ─────────────────── */
+  /* ─── VISTA MENSUAL ─────────────────────────────────── */
+  .month-grid-wrap {
+    display: none;
+    flex: 1;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  .month-grid-wrap.active { display: flex; }
+
+  .month-day-names {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .month-day-name {
+    padding: 10px 0;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    flex: 1;
+    overflow-y: auto;
+    border-left: 1px solid var(--border);
+  }
+  .month-grid::-webkit-scrollbar { width: 6px; }
+  .month-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .month-cell {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6px;
+    min-height: 110px;
+    cursor: pointer;
+    transition: background 0.12s;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .month-cell:hover { background: rgba(255,255,255,0.03); }
+  .month-cell.other-month { opacity: 0.35; }
+  .month-cell.today-cell { background: rgba(61,214,140,0.06); }
+
+  .month-cell-num {
+    font-size: 13px;
+    font-weight: 600;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 2px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+  }
+  .month-cell.today-cell .month-cell-num {
+    background: var(--accent);
+    color: var(--event-text);
+    font-weight: 700;
+  }
+  .month-cell:not(.other-month) .month-cell-num { color: var(--text); }
+
+  /* Chip de evento en la celda del mes */
+  .month-ev-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: opacity 0.12s;
+    flex-shrink: 0;
+  }
+  .month-ev-chip:hover { opacity: 0.8; }
+  .month-ev-chip.orange { background: rgba(227,179,65,0.25);  color: #e3b341; }
+  .month-ev-chip.blue   { background: rgba(56,139,253,0.25);  color: #58a6ff; }
+  .month-ev-chip.green  { background: rgba(61,214,140,0.25);  color: #3dd68c; }
+  .month-ev-chip.purple { background: rgba(188,140,255,0.25); color: #bc8cff; }
+  .month-ev-chip.pink   { background: rgba(247,120,186,0.25); color: #f778ba; }
+  .month-ev-chip.red    { background: rgba(255,123,114,0.25); color: #ff7b72; }
+
+  .month-ev-chip-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .month-ev-chip.orange .month-ev-chip-dot { background: #e3b341; }
+  .month-ev-chip.blue   .month-ev-chip-dot { background: #58a6ff; }
+  .month-ev-chip.green  .month-ev-chip-dot { background: #3dd68c; }
+  .month-ev-chip.purple .month-ev-chip-dot { background: #bc8cff; }
+  .month-ev-chip.pink   .month-ev-chip-dot { background: #f778ba; }
+  .month-ev-chip.red    .month-ev-chip-dot { background: #ff7b72; }
+
+  /* Chip de evento manual en mes */
+  .month-manual-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px dashed;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: opacity 0.12s;
+    flex-shrink: 0;
+  }
+  .month-manual-chip:hover { opacity: 0.8; }
+  .month-manual-chip.orange { border-color: #e3b341; color: #e3b341; }
+  .month-manual-chip.blue   { border-color: #58a6ff; color: #58a6ff; }
+  .month-manual-chip.green  { border-color: #3dd68c; color: #3dd68c; }
+  .month-manual-chip.purple { border-color: #bc8cff; color: #bc8cff; }
+  .month-manual-chip.pink   { border-color: #f778ba; color: #f778ba; }
+  .month-manual-chip.red    { border-color: #ff7b72; color: #ff7b72; }
+
+  /* Badge de tareas en la celda */
+  .month-task-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    color: var(--text-muted);
+    padding: 1px 4px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    margin-top: auto;
+    align-self: flex-start;
+  }
+
+  /* "+N más" al final de la celda */
+  .month-more {
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 1px 4px;
+    cursor: pointer;
+  }
+  .month-more:hover { color: var(--text); }
+
+  /* Botón toggle semana/mes */
+  .view-toggle {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .view-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .view-toggle-btn.active {
+    background: var(--surface);
+    color: var(--text);
+  }
+  .view-toggle-btn:hover:not(.active) { color: var(--text); }
+
+  /* ─── FIN VISTA MENSUAL ──────────────────────────────── */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -1663,6 +1841,11 @@
   </div>
   <span class="month-label" id="monthLabel"></span>
   <button class="today-btn" id="todayBtn">Hoy</button>
+  <!-- Toggle semana / mes -->
+  <div class="view-toggle">
+    <button class="view-toggle-btn active" id="btnViewWeek">Semana</button>
+    <button class="view-toggle-btn"        id="btnViewMonth">Mes</button>
+  </div>
   <button class="add-btn" id="addBtn">+ Agregar</button>
   <!-- Botón para mostrar/ocultar el panel de tareas -->
   <button class="tasks-toggle-btn" id="tasksToggleBtn">
@@ -1675,6 +1858,7 @@
     <span class="manuales-badge" id="manualesBadge"></span>
   </button>
   <button class="save-btn" id="saveFileBtn">💾 Guardar</button>
+  <button class="save-btn" id="exportBtn" title="Exportar para IA">🤖 Exportar</button>
   <!-- Chip de usuario activo -->
   <div class="user-chip" id="userChip" style="display:none">
     <div class="user-avatar" id="userAvatar"></div>
@@ -1695,6 +1879,12 @@
     </div>
     <div class="grid-body" id="gridBody">
       <div class="time-grid" id="timeGrid"></div>
+    </div>
+
+    <!-- Vista mensual -->
+    <div class="month-grid-wrap" id="monthGridWrap">
+      <div class="month-day-names" id="monthDayNames"></div>
+      <div class="month-grid"      id="monthGrid"></div>
     </div>
   </div>
 
@@ -1985,6 +2175,55 @@
   </div>
 </div>
 
+<!-- ─── MODAL EXPORTAR PARA IA ────────────────────────────── -->
+<div class="modal-overlay" id="exportOverlay">
+  <div class="modal" style="width:500px;max-width:95vw">
+    <h2>🤖 Exportar para IA</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;margin-top:-10px">
+      Genera un resumen en Markdown listo para pegar en cualquier chat de IA.
+    </p>
+    <div class="form-group">
+      <label>Rango de tiempo</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="exportRangePicker">
+        <button class="prio-opt active" data-r="week">Esta semana</button>
+        <button class="prio-opt" data-r="month">Este mes</button>
+        <button class="prio-opt" data-r="all">Todo</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Incluir</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer">
+          <input type="checkbox" id="expClases"   checked> Clases
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer">
+          <input type="checkbox" id="expManuales" checked> Eventos manuales
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer">
+          <input type="checkbox" id="expTareas"   checked> Tareas
+        </label>
+      </div>
+    </div>
+    <div style="position:relative">
+      <textarea id="exportOutput" readonly
+        style="width:100%;height:220px;background:var(--bg);border:1px solid var(--border);
+               color:var(--text);border-radius:8px;padding:12px;font-family:'DM Mono',monospace;
+               font-size:11px;line-height:1.6;resize:none;outline:none;"
+        placeholder="El resumen aparecerá aquí..."></textarea>
+      <button id="exportCopyBtn"
+        style="position:absolute;top:8px;right:8px;background:var(--surface);border:1px solid var(--border);
+               color:var(--text-muted);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;
+               font-family:inherit;transition:all 0.15s">
+        Copiar
+      </button>
+    </div>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn-cancel" id="exportCloseBtn">Cerrar</button>
+      <button class="btn-save"   id="exportGenBtn">Generar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── SCRIPT ────────────────────────────────────────────── -->
 <script>
 const SERVER = window.location.origin;
@@ -2191,6 +2430,17 @@ let blockNotes = {};
 //  HELPERS DE FECHA / HORA
 // ═══════════════════════════════════════════════════════════
 
+/**
+ * Devuelve "YYYY-MM-DD" usando la fecha LOCAL del dispositivo.
+ * Evita el bug de zona horaria de toISOString() que usa UTC.
+ */
+function localDate(d = new Date()) {
+  const y  = d.getFullYear();
+  const m  = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
 /** Devuelve la fecha de inicio de la semana actual + offset */
 function getWeekStart() {
   const today = new Date();
@@ -2345,7 +2595,7 @@ document.getElementById('manualesToggleBtn').addEventListener('click', () => {
 function renderManuales() {
   const filterDate = document.getElementById('manualFilterDate').value;
   const sortBy     = document.getElementById('manualSort').value;
-  const today      = new Date().toISOString().split('T')[0];
+  const today      = localDate();
 
   let filtered = manualEvents.filter(m => {
     if (filterDate === 'upcoming') return !m.date || m.date >= today;
@@ -2381,7 +2631,7 @@ function renderManuales() {
     groups[key].push(m);
   });
 
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const tomorrow = localDate(new Date(Date.now() + 86400000));
 
   for (const [dateKey, groupItems] of Object.entries(groups)) {
     const label = document.createElement('div');
@@ -2627,7 +2877,7 @@ function openManualModal(m, prefill = {}) {
   document.getElementById('mnTitle').value = m ? m.title : (prefill.title || '');
   document.getElementById('mnDesc').value  = m ? (m.description || '') : '';
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDate();
   document.getElementById('mnDate').value = m ? (m.date || today) : (prefill.date || today);
 
   buildManualHourSelects(m ? m.hour : (prefill.hour ?? null), m ? m.endHour : null);
@@ -2731,7 +2981,7 @@ function isMobile() { return window.innerWidth <= 600; }
 function renderDayNavBar(dayDates) {
   const bar = document.getElementById('dayNavBar');
   bar.innerHTML = '';
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localDate();
 
   dayDates.forEach((dateStr, i) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -2796,7 +3046,7 @@ function render() {
   for (let i = 0; i < 7; i++) {
     const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
     const isToday  = d.getTime() === today.getTime();
-    const dateStr  = d.toISOString().split('T')[0];
+    const dateStr  = localDate(d);
 
     // Dots: un dot por evento manual ese día (máx 4, luego "+")
     const dayManuales = manualEvents.filter(m => m.date === dateStr);
@@ -2826,7 +3076,7 @@ function render() {
   // Fechas de esta semana como strings ISO
   const dayDates = Array.from({length: 7}, (_, i) => {
     const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
-    return d.toISOString().split('T')[0];
+    return localDate(d);
   });
 
   // Filas por hora
@@ -2968,7 +3218,7 @@ function render() {
 
   // Línea de tiempo actual
   const now = new Date();
-  const curDayIdx = dayDates.indexOf(now.toISOString().split('T')[0]);
+  const curDayIdx = dayDates.indexOf(localDate(now));
   if (curDayIdx !== -1) {
     const overlay = getOrCreateColOverlay(tg, curDayIdx);
     const topPx = (now.getHours() + now.getMinutes() / 60) * 60;
@@ -3138,7 +3388,7 @@ function openModal(ev, date, hour) {
   } else {
     if (ev && ev.date) document.getElementById('evDate').value = ev.date;
     else if (date)     document.getElementById('evDate').value = date;
-    else               document.getElementById('evDate').value = new Date().toISOString().split('T')[0];
+    else               document.getElementById('evDate').value = localDate();
   }
 
   document.getElementById('evStart').value = ev ? ev.start : (hour != null ? String(hour).padStart(2,'0') + ':00' : '08:00');
@@ -3359,8 +3609,8 @@ function renderTasks() {
         if (!groups[key]) groups[key] = [];
         groups[key].push(t);
       });
-      const today    = new Date().toISOString().split('T')[0];
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      const today    = localDate();
+      const tomorrow = localDate(new Date(Date.now() + 86400000));
       for (const [dateKey, groupTasks] of Object.entries(groups)) {
         const label = document.createElement('div');
         label.className = 'task-group-label';
@@ -3494,7 +3744,7 @@ function buildEventSelect(preselectedId) {
   const sel = document.getElementById('tkEventLink');
   sel.innerHTML = '<option value="">— Sin vincular —</option>';
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localDate();
 
   // Para recurrentes: deduplicar por nombre, usar el primer id que aparezca
   const seenRecurringNames = new Set();
@@ -3534,7 +3784,7 @@ function openTaskModal(task, prefill = {}) {
   document.getElementById('tkDesc').value  = task ? (task.description || '') : '';
 
   // Fecha: tarea > prefill > hoy
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDate();
   document.getElementById('tkDate').value  = task ? (task.date || today) : (prefill.date || today);
 
   buildHourSelect();
@@ -3648,7 +3898,7 @@ function quickAddTask() {
     description: '',
     status:      'pending',
     priority:    'medium',
-    date:        new Date().toISOString().split('T')[0],
+    date:        localDate(),
     hour:        null,
     eventId:     null,
     createdAt:   Date.now(),
@@ -3703,7 +3953,7 @@ document.getElementById('gridBody').addEventListener('touchend', (e) => {
   const dayDates = Array.from({length: 7}, (_, i) => {
     const ws = getWeekStart();
     const d = new Date(ws); d.setDate(ws.getDate() + i);
-    return d.toISOString().split('T')[0];
+    return localDate(d);
   });
   renderDayNavBar(dayDates);
 }, { passive: true });
@@ -3804,12 +4054,219 @@ document.getElementById('noteTextarea').addEventListener('keydown', (e) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+//  VISTA MENSUAL
+// ═══════════════════════════════════════════════════════════
+
+let viewMode    = 'week';  // 'week' | 'month'
+let monthOffset = 0;       // meses desde el mes actual
+
+function switchView(mode) {
+  viewMode = mode;
+  document.getElementById('btnViewWeek').classList.toggle('active',  mode === 'week');
+  document.getElementById('btnViewMonth').classList.toggle('active', mode === 'month');
+
+  // Semana: mostrar headers + grid, ocultar mes
+  document.getElementById('dayHeaders').style.display    = mode === 'week' ? '' : 'none';
+  document.getElementById('gridBody').style.display      = mode === 'week' ? '' : 'none';
+  document.getElementById('monthGridWrap').classList.toggle('active', mode === 'month');
+
+  if (mode === 'month') {
+    // Sincronizar monthOffset con la semana visible
+    const ws = getWeekStart();
+    const now = new Date();
+    monthOffset = (ws.getFullYear() - now.getFullYear()) * 12 + (ws.getMonth() - now.getMonth());
+    renderMonth();
+  } else {
+    render();
+  }
+}
+
+function getMonthStart() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+}
+
+function renderMonth() {
+  const ms      = getMonthStart();
+  const year    = ms.getFullYear();
+  const month   = ms.getMonth();
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const todayStr = localDate(today);
+
+  // Etiqueta en topbar
+  document.getElementById('monthLabel').textContent =
+    MONTHS_ES[month] + ' ' + year;
+
+  // Cabeceras de días de la semana
+  const namesEl = document.getElementById('monthDayNames');
+  namesEl.innerHTML = DAYS_ES.map(d =>
+    `<div class="month-day-name">${d}</div>`
+  ).join('');
+
+  // Primer día a mostrar: domingo de la semana que contiene el 1 del mes
+  const firstDay = new Date(year, month, 1);
+  const startDate = new Date(firstDay);
+  startDate.setDate(1 - firstDay.getDay()); // retrocede al domingo
+
+  // Último día visible: sábado de la semana que contiene el último día del mes
+  const lastDay = new Date(year, month + 1, 0);
+  const endDate = new Date(lastDay);
+  endDate.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+
+  const grid = document.getElementById('monthGrid');
+  grid.innerHTML = '';
+
+  const cur = new Date(startDate);
+  while (cur <= endDate) {
+    const dateStr    = localDate(cur);
+    const isToday    = dateStr === todayStr;
+    const isThisMonth = cur.getMonth() === month;
+    const dayNum     = cur.getDate();
+    const dow        = cur.getDay(); // 0=Dom…6=Sáb
+
+    const cell = document.createElement('div');
+    cell.className = `month-cell${isToday ? ' today-cell' : ''}${!isThisMonth ? ' other-month' : ''}`;
+    cell.dataset.date = dateStr;
+
+    // Número del día
+    const numEl = document.createElement('div');
+    numEl.className = 'month-cell-num';
+    numEl.textContent = dayNum;
+    cell.appendChild(numEl);
+
+    // ── Eventos de calendario (recurrentes + únicos) ──
+    const dayEvents = events.filter(ev => {
+      if (ev.recurring) return ev.dayOfWeek === dow;
+      return ev.date === dateStr;
+    });
+
+    // ── Eventos manuales para ese día ──
+    const dayManuales = manualEvents.filter(m => m.date === dateStr);
+
+    // ── Tareas pendientes para ese día ──
+    const dayTasks = tasks.filter(t => t.date === dateStr && t.status === 'pending');
+
+    // Límite de chips visibles antes del "+N más"
+    const MAX_CHIPS = 3;
+    let shown = 0;
+
+    // Chips de eventos de calendario
+    for (const ev of dayEvents) {
+      if (shown >= MAX_CHIPS) break;
+      // Eventos manuales vinculados a este evento en este día
+      const linkedManuales = dayManuales.filter(m => m.eventId === ev.id);
+
+      const chip = document.createElement('div');
+      chip.className = `month-ev-chip ${ev.color || 'orange'}`;
+      chip.title = ev.name + (ev.location ? ' · ' + ev.location : '');
+
+      // Si hay manuales vinculados, mostrarlos inline dentro del chip
+      let linkedHtml = '';
+      if (linkedManuales.length > 0) {
+        linkedHtml = linkedManuales.map(m =>
+          `<span style="
+            margin-left:4px;
+            padding:0 4px;
+            border-radius:3px;
+            border:1px dashed currentColor;
+            opacity:0.9;
+            font-size:9px;
+          ">${escHtml(m.title)}</span>`
+        ).join('');
+      }
+
+      chip.innerHTML = `
+        <span class="month-ev-chip-dot"></span>
+        <span style="overflow:hidden;text-overflow:ellipsis;min-width:0">${escHtml(ev.name)}</span>
+        ${linkedHtml}
+      `;
+      chip.addEventListener('click', e => {
+        e.stopPropagation();
+        // Saltar a la semana de este día
+        jumpToWeek(dateStr);
+      });
+      cell.appendChild(chip);
+      shown++;
+
+      // Los manuales vinculados ya aparecieron en el chip — no los mostrar de nuevo
+      dayManuales.filter(m => m.eventId === ev.id).forEach(m => m._shown = true);
+    }
+
+    // Chips de eventos manuales NO vinculados (o vinculados a evento no visible ese día)
+    for (const m of dayManuales) {
+      if (m._shown) { delete m._shown; continue; }
+      if (shown >= MAX_CHIPS) break;
+      const chip = document.createElement('div');
+      chip.className = `month-manual-chip ${m.color || 'blue'}`;
+      chip.title = m.title + (m.description ? ' — ' + m.description : '');
+      chip.innerHTML = `◇ ${escHtml(m.title)}`;
+      chip.addEventListener('click', e => { e.stopPropagation(); openManualModal(m); });
+      cell.appendChild(chip);
+      shown++;
+    }
+
+    // "+N más" si hay más elementos
+    const total = dayEvents.length + dayManuales.filter(m => !m._shown).length;
+    dayManuales.forEach(m => delete m._shown);
+    if (total > MAX_CHIPS) {
+      const more = document.createElement('div');
+      more.className = 'month-more';
+      more.textContent = `+${total - MAX_CHIPS} más`;
+      more.addEventListener('click', e => { e.stopPropagation(); jumpToWeek(dateStr); });
+      cell.appendChild(more);
+    }
+
+    // Badge de tareas pendientes
+    if (dayTasks.length > 0) {
+      const badge = document.createElement('div');
+      badge.className = 'month-task-badge';
+      badge.innerHTML = `☐ ${dayTasks.length} tarea${dayTasks.length !== 1 ? 's' : ''}`;
+      badge.title = dayTasks.map(t => t.title).join('\n');
+      cell.appendChild(badge);
+    }
+
+    // Click en celda vacía → saltar a esa semana
+    cell.addEventListener('click', () => jumpToWeek(dateStr));
+
+    grid.appendChild(cell);
+    cur.setDate(cur.getDate() + 1);
+  }
+}
+
+/** Salta a la vista semanal de la semana que contiene dateStr */
+function jumpToWeek(dateStr) {
+  const d     = new Date(dateStr + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  // weekOffset = diferencia en semanas desde la semana actual
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const todaySunday = new Date(today);
+  todaySunday.setDate(today.getDate() - today.getDay());
+  const targetSunday = new Date(d);
+  targetSunday.setDate(d.getDate() - d.getDay());
+  weekOffset = Math.round((targetSunday - todaySunday) / msPerWeek);
+  switchView('week');
+}
+
+// ─── Botones toggle vista ───────────────────────────────
+document.getElementById('btnViewWeek').onclick  = () => switchView('week');
+document.getElementById('btnViewMonth').onclick = () => switchView('month');
+
+// ═══════════════════════════════════════════════════════════
 //  CONTROLES DEL CALENDARIO (topbar)
 // ═══════════════════════════════════════════════════════════
 
-document.getElementById('prevWeek').onclick  = () => { weekOffset--; render(); };
-document.getElementById('nextWeek').onclick  = () => { weekOffset++; render(); };
-document.getElementById('todayBtn').onclick  = () => { weekOffset = 0; render(); };
+document.getElementById('prevWeek').onclick  = () => {
+  if (viewMode === 'month') { monthOffset--; renderMonth(); }
+  else { weekOffset--; render(); }
+};
+document.getElementById('nextWeek').onclick  = () => {
+  if (viewMode === 'month') { monthOffset++; renderMonth(); }
+  else { weekOffset++; render(); }
+};
+document.getElementById('todayBtn').onclick  = () => {
+  weekOffset = 0; monthOffset = 0;
+  if (viewMode === 'month') renderMonth(); else render();
+};
 document.getElementById('addBtn').onclick    = () => openModal(null);
 
 document.getElementById('saveFileBtn').onclick = async () => {
@@ -3903,7 +4360,196 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closePerfil();
 });
 
-// Heartbeat al servidor
+// ═══════════════════════════════════════════════════════════
+//  EXPORTAR PARA IA
+// ═══════════════════════════════════════════════════════════
+
+let exportRange = 'week';
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    document.getElementById('exportBtn').onclick = () => {
+      document.getElementById('exportOverlay').classList.add('open');
+      generateExport();
+    };
+    document.getElementById('exportCloseBtn').onclick = () => {
+      document.getElementById('exportOverlay').classList.remove('open');
+    };
+    document.getElementById('exportOverlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget)
+        document.getElementById('exportOverlay').classList.remove('open');
+    });
+    document.getElementById('exportRangePicker').addEventListener('click', e => {
+      const btn = e.target.closest('[data-r]');
+      if (!btn) return;
+      exportRange = btn.dataset.r;
+      document.querySelectorAll('#exportRangePicker [data-r]').forEach(b =>
+        b.classList.toggle('active', b === btn)
+      );
+      generateExport();
+    });
+    ['expClases','expManuales','expTareas'].forEach(id => {
+      document.getElementById(id).addEventListener('change', generateExport);
+    });
+    document.getElementById('exportGenBtn').onclick = generateExport;
+    document.getElementById('exportCopyBtn').onclick = () => {
+      const txt = document.getElementById('exportOutput').value;
+      if (!txt) return;
+      navigator.clipboard.writeText(txt).then(() => {
+        const btn = document.getElementById('exportCopyBtn');
+        btn.textContent = '✅ Copiado';
+        setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
+      });
+    };
+  } catch(e) {
+    console.error('[Export init error]', e);
+  }
+});
+
+// También agregar el onclick directo como fallback
+window.addEventListener('load', () => {
+  const exportBtn = document.getElementById('exportBtn');
+  if (exportBtn && !exportBtn.onclick) {
+    exportBtn.onclick = () => {
+      document.getElementById('exportOverlay').classList.add('open');
+      generateExport();
+    };
+  }
+});
+
+function generateExport() {
+  const inclClases    = document.getElementById('expClases').checked;
+  const inclManuales  = document.getElementById('expManuales').checked;
+  const inclTareas    = document.getElementById('expTareas').checked;
+
+  // ── Rango de fechas según selección ──────────────────────
+  const now   = new Date(); now.setHours(0,0,0,0);
+  let dateMin, dateMax;
+
+  if (exportRange === 'week') {
+    const ws = getWeekStart();
+    dateMin = localDate(ws);
+    const we = new Date(ws); we.setDate(ws.getDate() + 6);
+    dateMax = localDate(we);
+  } else if (exportRange === 'month') {
+    const ms = getMonthStart();
+    dateMin = localDate(ms);
+    const me = new Date(ms.getFullYear(), ms.getMonth() + 1, 0);
+    dateMax = localDate(me);
+  } else {
+    dateMin = null; dateMax = null; // todo
+  }
+
+  const inRange = date => {
+    if (!dateMin) return true;
+    if (!date)    return exportRange === 'all';
+    return date >= dateMin && date <= dateMax;
+  };
+
+  const lines = [];
+  lines.push(`# Horario — ${currentUser || 'usuario'}`);
+  if (dateMin) lines.push(`> Rango: ${dateMin} → ${dateMax}`);
+  lines.push('');
+
+  // ── CLASES ────────────────────────────────────────────────
+  if (inclClases && events.length > 0) {
+    lines.push('## Clases');
+
+    // Recurrentes — siempre presentes en el rango (si hay semanas)
+    const recurrentes = events.filter(ev => ev.recurring);
+    if (recurrentes.length > 0) {
+      lines.push('### Semanales');
+      const DOW = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+      recurrentes
+        .sort((a,b) => a.dayOfWeek - b.dayOfWeek)
+        .forEach(ev => {
+          const loc = ev.location ? ` · ${ev.location}` : '';
+          lines.push(`- **${DOW[ev.dayOfWeek]}** · ${ev.name} · ${ev.start}–${ev.end}${loc}`);
+        });
+      lines.push('');
+    }
+
+    // Únicos dentro del rango
+    const unicos = events.filter(ev => !ev.recurring && inRange(ev.date));
+    if (unicos.length > 0) {
+      lines.push('### Actividades únicas');
+      unicos.sort((a,b) => a.date.localeCompare(b.date)).forEach(ev => {
+        const loc = ev.location ? ` · ${ev.location}` : '';
+        lines.push(`- ${ev.date} · ${ev.name} · ${ev.start}–${ev.end}${loc}`);
+      });
+      lines.push('');
+    }
+  }
+
+  // ── EVENTOS MANUALES ──────────────────────────────────────
+  if (inclManuales && manualEvents.length > 0) {
+    const filtered = manualEvents.filter(m => inRange(m.date));
+    if (filtered.length > 0) {
+      lines.push('## Eventos');
+      const PRIO_ICON = { orange:'🟠', blue:'🔵', green:'🟢', purple:'🟣', pink:'🩷', red:'🔴' };
+      filtered.sort((a,b) => (a.date||'').localeCompare(b.date||'')).forEach(m => {
+        const icon     = PRIO_ICON[m.color] || '📌';
+        const hora     = m.hour != null ? ` · ${fmtHourLabel(m.hour)}${m.endHour != null ? '–'+fmtHourLabel(m.endHour) : ''}` : '';
+        const linkedEv = m.eventId ? events.find(e => e.id === m.eventId) : null;
+        const vinculo  = linkedEv ? ` → *${linkedEv.name}*` : '';
+        const desc     = m.description ? ` — ${m.description}` : '';
+        lines.push(`- ${m.date || '(sin fecha)'} · ${icon} ${m.title}${hora}${vinculo}${desc}`);
+      });
+      lines.push('');
+    }
+  }
+
+  // ── TAREAS ────────────────────────────────────────────────
+  if (inclTareas && tasks.length > 0) {
+    const filtered = tasks.filter(t => inRange(t.date));
+    if (filtered.length > 0) {
+      const pendientes  = filtered.filter(t => t.status === 'pending');
+      const completadas = filtered.filter(t => t.status === 'done');
+      const PRIO_ICON   = { high:'🔴', medium:'🟡', low:'🟢', none:'⚪' };
+
+      if (pendientes.length > 0) {
+        lines.push('## Tareas pendientes');
+        pendientes
+          .sort((a,b) => {
+            const pa = {high:0,medium:1,low:2,none:3}[a.priority||'none'];
+            const pb = {high:0,medium:1,low:2,none:3}[b.priority||'none'];
+            return pa - pb || (a.date||'').localeCompare(b.date||'');
+          })
+          .forEach(t => {
+            const icon     = PRIO_ICON[t.priority||'none'];
+            const fecha    = t.date ? ` · ${t.date}` : '';
+            const hora     = t.hour != null ? ` ${fmtHourLabel(t.hour)}` : '';
+            const linkedEv = t.eventId ? events.find(e => e.id === t.eventId) : null;
+            const vinculo  = linkedEv ? ` → ${linkedEv.name}` : '';
+            const desc     = t.description ? `\n  > ${t.description}` : '';
+            lines.push(`- ${icon} ${t.title}${fecha}${hora}${vinculo}${desc}`);
+          });
+        lines.push('');
+      }
+
+      if (completadas.length > 0) {
+        lines.push('## Tareas completadas');
+        completadas.forEach(t => {
+          const fecha = t.date ? ` · ${t.date}` : '';
+          lines.push(`- ~~${t.title}~~${fecha}`);
+        });
+        lines.push('');
+      }
+    }
+  }
+
+  // ── Stats finales ─────────────────────────────────────────
+  const pendCount = tasks.filter(t => t.status === 'pending' && inRange(t.date)).length;
+  const evCount   = manualEvents.filter(m => inRange(m.date)).length;
+  if (pendCount > 0 || evCount > 0) {
+    lines.push('---');
+    if (pendCount > 0) lines.push(`*${pendCount} tarea(s) pendiente(s) en el rango.*`);
+    if (evCount   > 0) lines.push(`*${evCount} evento(s) especial(es) en el rango.*`);
+  }
+
+  document.getElementById('exportOutput').value = lines.join('\n');
+}
+
 setInterval(() => {
   if (authToken) authFetch(`${SERVER}/ping`).catch(() => {});
 }, 3000);
