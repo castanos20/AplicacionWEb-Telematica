@@ -2224,6 +2224,45 @@
   </div>
 </div>
 
+<!-- ─── MODAL PERFIL ──────────────────────────────────────── -->
+<div class="perfil-overlay" id="perfilOverlay">
+  <div class="perfil-box">
+    <div class="perfil-title">✏️ Editar perfil</div>
+    <div class="perfil-hint">Deja en blanco los campos que no quieras cambiar.</div>
+    <hr class="perfil-sep">
+    <div class="perfil-form">
+      <div>
+        <label>Nuevo nombre de usuario</label>
+        <input type="text" id="pfUser" placeholder="Dejar igual">
+      </div>
+      <div>
+        <label>Nuevo correo electrónico</label>
+        <input type="email" id="pfEmail" placeholder="Dejar igual">
+      </div>
+      <hr class="perfil-sep">
+      <div>
+        <label>Nueva contraseña</label>
+        <input type="password" id="pfNewPass" placeholder="Dejar igual">
+      </div>
+      <div>
+        <label>Confirmar nueva contraseña</label>
+        <input type="password" id="pfConfirmPass" placeholder="Dejar igual">
+      </div>
+      <hr class="perfil-sep">
+      <div>
+        <label>Contraseña actual <span style="color:#ff7b72">*</span></label>
+        <input type="password" id="pfCurPass" placeholder="Requerida para guardar cambios">
+      </div>
+      <div class="perfil-error" id="pfError"></div>
+      <div class="perfil-ok"    id="pfOk"></div>
+    </div>
+    <div class="perfil-actions">
+      <button class="perfil-cancel" onclick="closePerfil()">Cancelar</button>
+      <button class="perfil-save"   onclick="savePerfil()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── SCRIPT ────────────────────────────────────────────── -->
 <script>
 const SERVER = window.location.origin;
@@ -2430,6 +2469,17 @@ let blockNotes = {};
 //  HELPERS DE FECHA / HORA
 // ═══════════════════════════════════════════════════════════
 
+/**
+ * Devuelve "YYYY-MM-DD" usando la fecha LOCAL del dispositivo.
+ * Evita el bug de zona horaria de toISOString() que usa UTC.
+ */
+function localDate(d = new Date()) {
+  const y  = d.getFullYear();
+  const m  = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
 /** Devuelve la fecha de inicio de la semana actual + offset */
 function getWeekStart() {
   const today = new Date();
@@ -2584,7 +2634,7 @@ document.getElementById('manualesToggleBtn').addEventListener('click', () => {
 function renderManuales() {
   const filterDate = document.getElementById('manualFilterDate').value;
   const sortBy     = document.getElementById('manualSort').value;
-  const today      = new Date().toISOString().split('T')[0];
+  const today      = localDate();
 
   let filtered = manualEvents.filter(m => {
     if (filterDate === 'upcoming') return !m.date || m.date >= today;
@@ -2620,7 +2670,7 @@ function renderManuales() {
     groups[key].push(m);
   });
 
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const tomorrow = localDate(new Date(Date.now() + 86400000));
 
   for (const [dateKey, groupItems] of Object.entries(groups)) {
     const label = document.createElement('div');
@@ -2837,17 +2887,20 @@ function buildManualHourSelects(preHour, preEndHour) {
 }
 
 function buildManualEventSelect(preselectedId) {
-  const sel = document.getElementById('mnEventLink');
-  sel.innerHTML = '<option value="">— Sin vincular —</option>';
+  const sel      = document.getElementById('mnEventLink');
+  sel.innerHTML  = '<option value="">— Sin vincular —</option>';
+  const todayStr = localDate();
   const seenNames = new Set();
   events
     .filter(ev => {
       if (ev.recurring) {
+        // Deduplicar recurrentes por nombre
         const key = ev.name.trim().toLowerCase();
         if (seenNames.has(key)) return false;
         seenNames.add(key); return true;
       }
-      return true;
+      // Únicos: solo futuros/hoy, o el que ya está seleccionado
+      return ev.date >= todayStr || ev.id === preselectedId;
     })
     .forEach(ev => {
       const opt = document.createElement('option');
@@ -2866,7 +2919,7 @@ function openManualModal(m, prefill = {}) {
   document.getElementById('mnTitle').value = m ? m.title : (prefill.title || '');
   document.getElementById('mnDesc').value  = m ? (m.description || '') : '';
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDate();
   document.getElementById('mnDate').value = m ? (m.date || today) : (prefill.date || today);
 
   buildManualHourSelects(m ? m.hour : (prefill.hour ?? null), m ? m.endHour : null);
@@ -2970,7 +3023,7 @@ function isMobile() { return window.innerWidth <= 600; }
 function renderDayNavBar(dayDates) {
   const bar = document.getElementById('dayNavBar');
   bar.innerHTML = '';
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localDate();
 
   dayDates.forEach((dateStr, i) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -3035,7 +3088,7 @@ function render() {
   for (let i = 0; i < 7; i++) {
     const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
     const isToday  = d.getTime() === today.getTime();
-    const dateStr  = d.toISOString().split('T')[0];
+    const dateStr  = localDate(d);
 
     // Dots: un dot por evento manual ese día (máx 4, luego "+")
     const dayManuales = manualEvents.filter(m => m.date === dateStr);
@@ -3065,7 +3118,7 @@ function render() {
   // Fechas de esta semana como strings ISO
   const dayDates = Array.from({length: 7}, (_, i) => {
     const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
-    return d.toISOString().split('T')[0];
+    return localDate(d);
   });
 
   // Filas por hora
@@ -3139,9 +3192,19 @@ function render() {
       : '';
 
     // Tags de eventos manuales vinculados a este bloque
+    // Para recurrentes: matchear por id O por nombre (el selector guarda el id
+    // de una sola instancia pero en la grilla cada día tiene instancia distinta)
     const linkedManuales = manualEvents.filter(m => {
-      if (m.eventId !== ev.id) return false;
-      // Para recurrentes: solo mostrar si la fecha del manual es esta ocurrencia
+      if (!m.eventId) return false;
+      const directMatch = m.eventId === ev.id;
+      const nameMatch   = ev.recurring && (() => {
+        const linkedEv = events.find(e => e.id === m.eventId);
+        return linkedEv &&
+               linkedEv.name.trim().toLowerCase() === ev.name.trim().toLowerCase() &&
+               linkedEv.recurring;
+      })();
+      if (!directMatch && !nameMatch) return false;
+      // Para recurrentes: solo mostrar en la ocurrencia cuya fecha coincide
       if (ev.recurring) return m.date === occurrenceDate;
       return true;
     });
@@ -3207,7 +3270,7 @@ function render() {
 
   // Línea de tiempo actual
   const now = new Date();
-  const curDayIdx = dayDates.indexOf(now.toISOString().split('T')[0]);
+  const curDayIdx = dayDates.indexOf(localDate(now));
   if (curDayIdx !== -1) {
     const overlay = getOrCreateColOverlay(tg, curDayIdx);
     const topPx = (now.getHours() + now.getMinutes() / 60) * 60;
@@ -3377,7 +3440,7 @@ function openModal(ev, date, hour) {
   } else {
     if (ev && ev.date) document.getElementById('evDate').value = ev.date;
     else if (date)     document.getElementById('evDate').value = date;
-    else               document.getElementById('evDate').value = new Date().toISOString().split('T')[0];
+    else               document.getElementById('evDate').value = localDate();
   }
 
   document.getElementById('evStart').value = ev ? ev.start : (hour != null ? String(hour).padStart(2,'0') + ':00' : '08:00');
@@ -3598,8 +3661,8 @@ function renderTasks() {
         if (!groups[key]) groups[key] = [];
         groups[key].push(t);
       });
-      const today    = new Date().toISOString().split('T')[0];
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      const today    = localDate();
+      const tomorrow = localDate(new Date(Date.now() + 86400000));
       for (const [dateKey, groupTasks] of Object.entries(groups)) {
         const label = document.createElement('div');
         label.className = 'task-group-label';
@@ -3733,7 +3796,7 @@ function buildEventSelect(preselectedId) {
   const sel = document.getElementById('tkEventLink');
   sel.innerHTML = '<option value="">— Sin vincular —</option>';
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localDate();
 
   // Para recurrentes: deduplicar por nombre, usar el primer id que aparezca
   const seenRecurringNames = new Set();
@@ -3773,7 +3836,7 @@ function openTaskModal(task, prefill = {}) {
   document.getElementById('tkDesc').value  = task ? (task.description || '') : '';
 
   // Fecha: tarea > prefill > hoy
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDate();
   document.getElementById('tkDate').value  = task ? (task.date || today) : (prefill.date || today);
 
   buildHourSelect();
@@ -3887,7 +3950,7 @@ function quickAddTask() {
     description: '',
     status:      'pending',
     priority:    'medium',
-    date:        new Date().toISOString().split('T')[0],
+    date:        localDate(),
     hour:        null,
     eventId:     null,
     createdAt:   Date.now(),
@@ -3942,7 +4005,7 @@ document.getElementById('gridBody').addEventListener('touchend', (e) => {
   const dayDates = Array.from({length: 7}, (_, i) => {
     const ws = getWeekStart();
     const d = new Date(ws); d.setDate(ws.getDate() + i);
-    return d.toISOString().split('T')[0];
+    return localDate(d);
   });
   renderDayNavBar(dayDates);
 }, { passive: true });
@@ -4080,7 +4143,7 @@ function renderMonth() {
   const year    = ms.getFullYear();
   const month   = ms.getMonth();
   const today   = new Date(); today.setHours(0,0,0,0);
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = localDate(today);
 
   // Etiqueta en topbar
   document.getElementById('monthLabel').textContent =
@@ -4107,7 +4170,7 @@ function renderMonth() {
 
   const cur = new Date(startDate);
   while (cur <= endDate) {
-    const dateStr    = cur.toISOString().split('T')[0];
+    const dateStr    = localDate(cur);
     const isToday    = dateStr === todayStr;
     const isThisMonth = cur.getMonth() === month;
     const dayNum     = cur.getDate();
@@ -4143,7 +4206,18 @@ function renderMonth() {
     for (const ev of dayEvents) {
       if (shown >= MAX_CHIPS) break;
       // Eventos manuales vinculados a este evento en este día
-      const linkedManuales = dayManuales.filter(m => m.eventId === ev.id);
+      const linkedManuales = dayManuales.filter(m => {
+        if (!m.eventId) return false;
+        if (m.eventId === ev.id) return true;
+        // Recurrentes: matchear por nombre
+        if (ev.recurring) {
+          const linkedEv = events.find(e => e.id === m.eventId);
+          return linkedEv &&
+                 linkedEv.name.trim().toLowerCase() === ev.name.trim().toLowerCase() &&
+                 linkedEv.recurring;
+        }
+        return false;
+      });
 
       const chip = document.createElement('div');
       chip.className = `month-ev-chip ${ev.color || 'orange'}`;
@@ -4178,7 +4252,17 @@ function renderMonth() {
       shown++;
 
       // Los manuales vinculados ya aparecieron en el chip — no los mostrar de nuevo
-      dayManuales.filter(m => m.eventId === ev.id).forEach(m => m._shown = true);
+      dayManuales.filter(m => {
+        if (!m.eventId) return false;
+        if (m.eventId === ev.id) return true;
+        if (ev.recurring) {
+          const linkedEv = events.find(e => e.id === m.eventId);
+          return linkedEv &&
+                 linkedEv.name.trim().toLowerCase() === ev.name.trim().toLowerCase() &&
+                 linkedEv.recurring;
+        }
+        return false;
+      }).forEach(m => m._shown = true);
     }
 
     // Chips de eventos manuales NO vinculados (o vinculados a evento no visible ese día)
@@ -4417,14 +4501,14 @@ function generateExport() {
 
   if (exportRange === 'week') {
     const ws = getWeekStart();
-    dateMin = ws.toISOString().split('T')[0];
+    dateMin = localDate(ws);
     const we = new Date(ws); we.setDate(ws.getDate() + 6);
-    dateMax = we.toISOString().split('T')[0];
+    dateMax = localDate(we);
   } else if (exportRange === 'month') {
     const ms = getMonthStart();
-    dateMin = ms.toISOString().split('T')[0];
+    dateMin = localDate(ms);
     const me = new Date(ms.getFullYear(), ms.getMonth() + 1, 0);
-    dateMax = me.toISOString().split('T')[0];
+    dateMax = localDate(me);
   } else {
     dateMin = null; dateMax = null; // todo
   }
@@ -4543,44 +4627,6 @@ setInterval(() => {
   if (authToken) authFetch(`${SERVER}/ping`).catch(() => {});
 }, 3000);
 </script>
-<!-- ─── MODAL PERFIL ──────────────────────────────────────── -->
-<div class="perfil-overlay" id="perfilOverlay">
-  <div class="perfil-box">
-    <div class="perfil-title">✏️ Editar perfil</div>
-    <div class="perfil-hint">Deja en blanco los campos que no quieras cambiar.</div>
-    <hr class="perfil-sep">
-    <div class="perfil-form">
-      <div>
-        <label>Nuevo nombre de usuario</label>
-        <input type="text" id="pfUser" placeholder="Dejar igual">
-      </div>
-      <div>
-        <label>Nuevo correo electrónico</label>
-        <input type="email" id="pfEmail" placeholder="Dejar igual">
-      </div>
-      <hr class="perfil-sep">
-      <div>
-        <label>Nueva contraseña</label>
-        <input type="password" id="pfNewPass" placeholder="Dejar igual">
-      </div>
-      <div>
-        <label>Confirmar nueva contraseña</label>
-        <input type="password" id="pfConfirmPass" placeholder="Dejar igual">
-      </div>
-      <hr class="perfil-sep">
-      <div>
-        <label>Contraseña actual <span style="color:#ff7b72">*</span></label>
-        <input type="password" id="pfCurPass" placeholder="Requerida para guardar cambios">
-      </div>
-      <div class="perfil-error" id="pfError"></div>
-      <div class="perfil-ok"    id="pfOk"></div>
-    </div>
-    <div class="perfil-actions">
-      <button class="perfil-cancel" onclick="closePerfil()">Cancelar</button>
-      <button class="perfil-save"   onclick="savePerfil()">Guardar cambios</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
