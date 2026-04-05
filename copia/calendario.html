@@ -1857,6 +1857,7 @@
     📅 Eventos
     <span class="manuales-badge" id="manualesBadge"></span>
   </button>
+  <button class="save-btn" onclick="abrirDGYM()">💪 DGYM</button>
   <button class="save-btn" id="saveFileBtn">💾 Guardar</button>
   <button class="save-btn" id="exportBtn" title="Exportar para IA">🤖 Exportar</button>
   <!-- Chip de usuario activo -->
@@ -2220,45 +2221,6 @@
     <div class="modal-actions" style="margin-top:12px">
       <button class="btn-cancel" id="exportCloseBtn">Cerrar</button>
       <button class="btn-save"   id="exportGenBtn">Generar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ─── MODAL PERFIL ──────────────────────────────────────── -->
-<div class="perfil-overlay" id="perfilOverlay">
-  <div class="perfil-box">
-    <div class="perfil-title">✏️ Editar perfil</div>
-    <div class="perfil-hint">Deja en blanco los campos que no quieras cambiar.</div>
-    <hr class="perfil-sep">
-    <div class="perfil-form">
-      <div>
-        <label>Nuevo nombre de usuario</label>
-        <input type="text" id="pfUser" placeholder="Dejar igual">
-      </div>
-      <div>
-        <label>Nuevo correo electrónico</label>
-        <input type="email" id="pfEmail" placeholder="Dejar igual">
-      </div>
-      <hr class="perfil-sep">
-      <div>
-        <label>Nueva contraseña</label>
-        <input type="password" id="pfNewPass" placeholder="Dejar igual">
-      </div>
-      <div>
-        <label>Confirmar nueva contraseña</label>
-        <input type="password" id="pfConfirmPass" placeholder="Dejar igual">
-      </div>
-      <hr class="perfil-sep">
-      <div>
-        <label>Contraseña actual <span style="color:#ff7b72">*</span></label>
-        <input type="password" id="pfCurPass" placeholder="Requerida para guardar cambios">
-      </div>
-      <div class="perfil-error" id="pfError"></div>
-      <div class="perfil-ok"    id="pfOk"></div>
-    </div>
-    <div class="perfil-actions">
-      <button class="perfil-cancel" onclick="closePerfil()">Cancelar</button>
-      <button class="perfil-save"   onclick="savePerfil()">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -2887,20 +2849,17 @@ function buildManualHourSelects(preHour, preEndHour) {
 }
 
 function buildManualEventSelect(preselectedId) {
-  const sel      = document.getElementById('mnEventLink');
-  sel.innerHTML  = '<option value="">— Sin vincular —</option>';
-  const todayStr = localDate();
+  const sel = document.getElementById('mnEventLink');
+  sel.innerHTML = '<option value="">— Sin vincular —</option>';
   const seenNames = new Set();
   events
     .filter(ev => {
       if (ev.recurring) {
-        // Deduplicar recurrentes por nombre
         const key = ev.name.trim().toLowerCase();
         if (seenNames.has(key)) return false;
         seenNames.add(key); return true;
       }
-      // Únicos: solo futuros/hoy, o el que ya está seleccionado
-      return ev.date >= todayStr || ev.id === preselectedId;
+      return true;
     })
     .forEach(ev => {
       const opt = document.createElement('option');
@@ -3192,19 +3151,9 @@ function render() {
       : '';
 
     // Tags de eventos manuales vinculados a este bloque
-    // Para recurrentes: matchear por id O por nombre (el selector guarda el id
-    // de una sola instancia pero en la grilla cada día tiene instancia distinta)
     const linkedManuales = manualEvents.filter(m => {
-      if (!m.eventId) return false;
-      const directMatch = m.eventId === ev.id;
-      const nameMatch   = ev.recurring && (() => {
-        const linkedEv = events.find(e => e.id === m.eventId);
-        return linkedEv &&
-               linkedEv.name.trim().toLowerCase() === ev.name.trim().toLowerCase() &&
-               linkedEv.recurring;
-      })();
-      if (!directMatch && !nameMatch) return false;
-      // Para recurrentes: solo mostrar en la ocurrencia cuya fecha coincide
+      if (m.eventId !== ev.id) return false;
+      // Para recurrentes: solo mostrar si la fecha del manual es esta ocurrencia
       if (ev.recurring) return m.date === occurrenceDate;
       return true;
     });
@@ -4206,18 +4155,7 @@ function renderMonth() {
     for (const ev of dayEvents) {
       if (shown >= MAX_CHIPS) break;
       // Eventos manuales vinculados a este evento en este día
-      const linkedManuales = dayManuales.filter(m => {
-        if (!m.eventId) return false;
-        if (m.eventId === ev.id) return true;
-        // Recurrentes: matchear por nombre
-        if (ev.recurring) {
-          const linkedEv = events.find(e => e.id === m.eventId);
-          return linkedEv &&
-                 linkedEv.name.trim().toLowerCase() === ev.name.trim().toLowerCase() &&
-                 linkedEv.recurring;
-        }
-        return false;
-      });
+      const linkedManuales = dayManuales.filter(m => m.eventId === ev.id);
 
       const chip = document.createElement('div');
       chip.className = `month-ev-chip ${ev.color || 'orange'}`;
@@ -4252,17 +4190,7 @@ function renderMonth() {
       shown++;
 
       // Los manuales vinculados ya aparecieron en el chip — no los mostrar de nuevo
-      dayManuales.filter(m => {
-        if (!m.eventId) return false;
-        if (m.eventId === ev.id) return true;
-        if (ev.recurring) {
-          const linkedEv = events.find(e => e.id === m.eventId);
-          return linkedEv &&
-                 linkedEv.name.trim().toLowerCase() === ev.name.trim().toLowerCase() &&
-                 linkedEv.recurring;
-        }
-        return false;
-      }).forEach(m => m._shown = true);
+      dayManuales.filter(m => m.eventId === ev.id).forEach(m => m._shown = true);
     }
 
     // Chips de eventos manuales NO vinculados (o vinculados a evento no visible ese día)
@@ -4626,7 +4554,54 @@ function generateExport() {
 setInterval(() => {
   if (authToken) authFetch(`${SERVER}/ping`).catch(() => {});
 }, 3000);
+
+var _dgymTab = null;
+function abrirDGYM() {
+  if (_dgymTab && !_dgymTab.closed) {
+    _dgymTab.focus();
+  } else {
+    _dgymTab = window.open("http://192.168.1.10:8004", "dgym");
+  }
+}
 </script>
+<!-- ─── MODAL PERFIL ──────────────────────────────────────── -->
+<div class="perfil-overlay" id="perfilOverlay">
+  <div class="perfil-box">
+    <div class="perfil-title">✏️ Editar perfil</div>
+    <div class="perfil-hint">Deja en blanco los campos que no quieras cambiar.</div>
+    <hr class="perfil-sep">
+    <div class="perfil-form">
+      <div>
+        <label>Nuevo nombre de usuario</label>
+        <input type="text" id="pfUser" placeholder="Dejar igual">
+      </div>
+      <div>
+        <label>Nuevo correo electrónico</label>
+        <input type="email" id="pfEmail" placeholder="Dejar igual">
+      </div>
+      <hr class="perfil-sep">
+      <div>
+        <label>Nueva contraseña</label>
+        <input type="password" id="pfNewPass" placeholder="Dejar igual">
+      </div>
+      <div>
+        <label>Confirmar nueva contraseña</label>
+        <input type="password" id="pfConfirmPass" placeholder="Dejar igual">
+      </div>
+      <hr class="perfil-sep">
+      <div>
+        <label>Contraseña actual <span style="color:#ff7b72">*</span></label>
+        <input type="password" id="pfCurPass" placeholder="Requerida para guardar cambios">
+      </div>
+      <div class="perfil-error" id="pfError"></div>
+      <div class="perfil-ok"    id="pfOk"></div>
+    </div>
+    <div class="perfil-actions">
+      <button class="perfil-cancel" onclick="closePerfil()">Cancelar</button>
+      <button class="perfil-save"   onclick="savePerfil()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
